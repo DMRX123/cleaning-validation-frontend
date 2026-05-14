@@ -1,7 +1,7 @@
 // src/lib/api.ts
 import axios from 'axios'
 
-// IMPORTANT: Hardcoded for Vercel deployment - Remove the environment variable check
+// HARDCODED for Vercel deployment
 const api = axios.create({
   baseURL: 'https://cleaning-validation-backend.onrender.com/api',
   headers: {
