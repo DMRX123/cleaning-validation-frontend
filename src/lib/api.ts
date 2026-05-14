@@ -1,12 +1,10 @@
-// src/lib/api.ts - CORRECTED
+// src/lib/api.ts - CORRECTED VERSION
 import axios from 'axios'
 
-// Remove trailing /api from baseURL since it's already in rewrites
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cleaning-validation-backend.onrender.com'
 
-// IMPORTANT: Don't add /api here - it's handled by rewrites
 const api = axios.create({
-  baseURL: `${API_BASE_URL}`,  // ← NO /api here!
+  baseURL: `${API_BASE_URL}/api`,  // ← MUST include /api here!
   headers: {
     'Content-Type': 'application/json',
   },

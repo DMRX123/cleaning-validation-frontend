@@ -23,7 +23,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Now this will call: baseURL + '/auth/token' = 'http://localhost:8000/api/auth/token'
       const response = await api.post('/auth/token', 
         new URLSearchParams({
           username: formData.username,
