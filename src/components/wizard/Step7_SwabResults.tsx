@@ -1,3 +1,4 @@
+// src/components/wizard/Step7_SwabResults.tsx - COMPLETE FIXED
 'use client'
 
 import { useState } from 'react'
@@ -11,34 +12,101 @@ import toast from 'react-hot-toast'
 
 export function Step7_SwabResults({ data, onChange }: { data: any; onChange: (data: any) => void }) {
   const [results, setResults] = useState<any[]>(data.swabResults || [])
-  const [location, setLocation] = useState('')
+  const [formData, setFormData] = useState({
+    location_name: '',
+    absorbance_sample: 0,
+    absorbance_std: 0.5,
+  })
   const [loading, setLoading] = useState(false)
 
   const addResult = async () => {
-    if (!location || !data.sessionId) return
+    if (!formData.location_name || !data.sessionId) {
+      toast.error('Please enter location name')
+      return
+    }
+    
     setLoading(true)
     try {
-      const res = await api.post('/validation/swab-result', { session_id: data.sessionId, location_name: location, absorbance_sample: 0.1, absorbance_std: 0.5 })
-      const newResults = [...results, { location_name: location, result_ppm: res.data.result_ppm }]
+      const res = await api.post('/validation/swab-result', { 
+        session_id: data.sessionId, 
+        location_name: formData.location_name,
+        absorbance_sample: formData.absorbance_sample,
+        absorbance_std: formData.absorbance_std
+      })
+      
+      const newResults = [...results, { 
+        location_name: formData.location_name, 
+        result_ppm: res.data.result_ppm,
+        reported: res.data.reported
+      }]
       setResults(newResults)
       onChange({ ...data, swabResults: newResults })
-      setLocation('')
+      setFormData({ location_name: '', absorbance_sample: 0, absorbance_std: 0.5 })
       toast.success('Swab result added')
-    } catch { toast.error('Failed to add') } finally { setLoading(false) }
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to add')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <Card>
       <CardHeader><CardTitle>Step 7: Swab Results</CardTitle></CardHeader>
-      <CardContent>
-        <div className="flex gap-4 mb-4">
-          <Input placeholder="Location name" value={location} onChange={(e) => setLocation(e.target.value)} />
-          <Button onClick={addResult} disabled={loading}>Add</Button>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label>Location Name *</Label>
+            <Input 
+              placeholder="e.g., Manhole area" 
+              value={formData.location_name} 
+              onChange={(e) => setFormData({...formData, location_name: e.target.value})}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Sample Absorbance</Label>
+            <Input 
+              type="number" 
+              step="0.01"
+              placeholder="0.00" 
+              value={formData.absorbance_sample} 
+              onChange={(e) => setFormData({...formData, absorbance_sample: parseFloat(e.target.value) || 0})}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Standard Absorbance</Label>
+            <Input 
+              type="number" 
+              step="0.01"
+              placeholder="0.50" 
+              value={formData.absorbance_std} 
+              onChange={(e) => setFormData({...formData, absorbance_std: parseFloat(e.target.value) || 0.5})}
+            />
+          </div>
         </div>
+        
+        <Button onClick={addResult} disabled={loading} className="w-full">
+          {loading ? 'Adding...' : 'Add Swab Result'}
+        </Button>
+        
         {results.length > 0 && (
           <Table>
-            <TableHeader><TableRow><TableHead>Location</TableHead><TableHead>Result (ppm)</TableHead></TableRow></TableHeader>
-            <TableBody>{results.map((r, i) => (<TableRow key={i}><TableCell>{r.location_name}</TableCell><TableCell>{r.result_ppm?.toFixed(2)}</TableCell></TableRow>))}</TableBody>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Location</TableHead>
+                <TableHead>Result (ppm)</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {results.map((r, i) => (
+                <TableRow key={i}>
+                  <TableCell>{r.location_name}</TableCell>
+                  <TableCell>{r.result_ppm?.toFixed(2) || '-'}</TableCell>
+                  <TableCell>{r.reported || '-'}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
         )}
       </CardContent>

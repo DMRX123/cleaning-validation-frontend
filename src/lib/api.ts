@@ -1,12 +1,15 @@
-// src/lib/api.ts
+// src/lib/api.ts - COMPLETE WITH ENV VARIABLES
 import axios from 'axios'
 
-// HARDCODED for Vercel deployment
+// Use environment variable with fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cleaning-validation-backend.onrender.com'
+
 const api = axios.create({
-  baseURL: 'https://cleaning-validation-backend.onrender.com/api',
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
 })
 
 api.interceptors.request.use((config) => {
@@ -22,6 +25,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
+      localStorage.removeItem('user')
       window.location.href = '/login'
     }
     return Promise.reject(error)

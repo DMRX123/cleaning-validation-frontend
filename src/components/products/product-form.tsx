@@ -33,6 +33,7 @@ export function ProductForm({ initialData, isEditing }: ProductFormProps) {
     lod: initialData?.lod || 0.1,
     loq: initialData?.loq || 0.5,
     swab_dilution: initialData?.swab_dilution || 20,
+    swab_surface_area: initialData?.swab_surface_area || 0.01,
     solubility: initialData?.solubility || 'Soluble',
     hardest_to_clean: initialData?.hardest_to_clean || 'Medium',
     plant: initialData?.plant || 'Plant-1',
@@ -53,6 +54,7 @@ export function ProductForm({ initialData, isEditing }: ProductFormProps) {
       lod: parseFloat(formData.lod as any),
       loq: parseFloat(formData.loq as any),
       swab_dilution: parseFloat(formData.swab_dilution as any),
+      swab_surface_area: parseFloat(formData.swab_surface_area as any),
     }
 
     try {
@@ -192,6 +194,20 @@ export function ProductForm({ initialData, isEditing }: ProductFormProps) {
                 onChange={(e) => setFormData({ ...formData, swab_dilution: e.target.value })}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label>Swab Surface Area (m²) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                required
+                value={formData.swab_surface_area}
+                onChange={(e) => setFormData({ ...formData, swab_surface_area: e.target.value })}
+                placeholder="0.01"
+              />
+              <p className="text-xs text-gray-500">Typically 0.01 m² (10x10 cm)</p>
+            </div>
+
             <div className="space-y-2">
               <Label>Solubility *</Label>
               <Select
