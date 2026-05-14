@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',  // ✅ Add /api here
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://cleaning-validation-backend.onrender.com/api',  // ✅ Add /api here
   headers: {
     'Content-Type': 'application/json',
   },
