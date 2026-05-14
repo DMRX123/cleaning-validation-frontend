@@ -1,8 +1,9 @@
 // src/lib/api.ts
 import axios from 'axios'
 
+// IMPORTANT: Hardcoded for Vercel deployment - Remove the environment variable check
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://cleaning-validation-backend.onrender.com/api',
+  baseURL: 'https://cleaning-validation-backend.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
