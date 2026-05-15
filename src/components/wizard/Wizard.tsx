@@ -271,6 +271,9 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
     return 'pending'
   }
 
+  // Calculate progress percentage
+  const progressPercentage = (currentStep / STEPS.length) * 100
+
   if (loading) {
     return (
       <div className="wizard-loading-container">
@@ -288,7 +291,7 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
           <div className="wizard-error-banner">
             <AlertCircle className="wizard-error-icon" />
             <p className="wizard-error-text">{error}</p>
-            <button onClick={() => setError(null)} className="wizard-error-close">
+            <button onClick={() => setError(null)} className="wizard-error-close" aria-label="Close">
               ×
             </button>
           </div>
@@ -356,11 +359,11 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
           <p className="wizard-progress-text">
             Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].name}
           </p>
-          <div className="wizard-progress-bar-bg">
-            <div 
-              className="wizard-progress-bar-fill"
-              style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
-            />
+          <div 
+            className="wizard-progress-bar-bg"
+            data-progress={progressPercentage}
+          >
+            <div className="wizard-progress-bar-fill" />
           </div>
         </div>
       </div>
