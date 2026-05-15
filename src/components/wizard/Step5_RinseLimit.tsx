@@ -9,6 +9,21 @@ import { Loader2, AlertCircle, Droplets } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
+// Safe number formatting function
+const formatNumber = (value: any, decimals: number = 4): string => {
+  if (value === null || value === undefined) return '0'
+  const num = typeof value === 'number' ? value : parseFloat(value)
+  if (isNaN(num)) return '0'
+  return num.toFixed(decimals)
+}
+
+const formatNumber2 = (value: any, decimals: number = 2): string => {
+  if (value === null || value === undefined) return '0'
+  const num = typeof value === 'number' ? value : parseFloat(value)
+  if (isNaN(num)) return '0'
+  return num.toFixed(decimals)
+}
+
 export function Step5_RinseLimit({ data, onChange }: { data: any; onChange: (data: any) => void }) {
   const [loading, setLoading] = useState(false)
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<number | null>(null)
@@ -54,13 +69,14 @@ export function Step5_RinseLimit({ data, onChange }: { data: any; onChange: (dat
         total_surface_area: data.totalSurfaceArea || 100
       })
 
+      // Ensure all values are numbers before storing
       const rinseLimit = {
-        limit_mg: response.data.limit_mg,
-        limit_ppm: response.data.limit_ppm,
-        volume_loq: response.data.volume_loq,
-        volume_10ppm: response.data.volume_10ppm,
-        volume_amv: response.data.volume_amv,
-        maco_mg: response.data.maco_mg,
+        limit_mg: typeof response.data.limit_mg === 'number' ? response.data.limit_mg : parseFloat(response.data.limit_mg) || 0,
+        limit_ppm: typeof response.data.limit_ppm === 'number' ? response.data.limit_ppm : parseFloat(response.data.limit_ppm) || 0,
+        volume_loq: typeof response.data.volume_loq === 'number' ? response.data.volume_loq : parseFloat(response.data.volume_loq) || 0,
+        volume_10ppm: typeof response.data.volume_10ppm === 'number' ? response.data.volume_10ppm : parseFloat(response.data.volume_10ppm) || 0,
+        volume_amv: typeof response.data.volume_amv === 'number' ? response.data.volume_amv : parseFloat(response.data.volume_amv) || 0,
+        maco_mg: typeof response.data.maco_mg === 'number' ? response.data.maco_mg : parseFloat(response.data.maco_mg) || 0,
         equipment_name: selectedEquipment.name,
         equipment_surface_area: selectedEquipment.surface_area
       }
@@ -118,14 +134,14 @@ export function Step5_RinseLimit({ data, onChange }: { data: any; onChange: (dat
               <div className="p-6 bg-green-50 rounded-xl text-center border border-green-200">
                 <Droplets className="h-8 w-8 text-pharma-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-600 mb-1">Rinse Limit</p>
-                <p className="text-3xl font-bold text-pharma-700">{data.rinseLimit.limit_mg?.toFixed(4) || '0'} mg</p>
+                <p className="text-3xl font-bold text-pharma-700">{formatNumber(data.rinseLimit.limit_mg)} mg</p>
                 <p className="text-xs text-gray-500 mt-2">(MACO × Eq Area) / Total Area</p>
               </div>
               
               <div className="p-6 bg-blue-50 rounded-xl text-center border border-blue-200">
                 <Droplets className="h-8 w-8 text-pharma-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-600 mb-1">Rinse Limit</p>
-                <p className="text-3xl font-bold text-pharma-700">{data.rinseLimit.limit_ppm?.toFixed(2) || '0'} ppm</p>
+                <p className="text-3xl font-bold text-pharma-700">{formatNumber2(data.rinseLimit.limit_ppm)} ppm</p>
                 <p className="text-xs text-gray-500 mt-2">ppm = mg/L (based on rinse volume)</p>
               </div>
             </div>
@@ -133,15 +149,15 @@ export function Step5_RinseLimit({ data, onChange }: { data: any; onChange: (dat
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
               <div className="p-3 bg-purple-50 rounded-lg text-center">
                 <p className="text-xs text-gray-500">Volume (LOQ based)</p>
-                <p className="text-lg font-bold text-purple-700">{data.rinseLimit.volume_loq?.toFixed(2) || '0'} L</p>
+                <p className="text-lg font-bold text-purple-700">{formatNumber2(data.rinseLimit.volume_loq)} L</p>
               </div>
               <div className="p-3 bg-indigo-50 rounded-lg text-center">
                 <p className="text-xs text-gray-500">Volume (10 ppm based)</p>
-                <p className="text-lg font-bold text-indigo-700">{data.rinseLimit.volume_10ppm?.toFixed(2) || '0'} L</p>
+                <p className="text-lg font-bold text-indigo-700">{formatNumber2(data.rinseLimit.volume_10ppm)} L</p>
               </div>
               <div className="p-3 bg-teal-50 rounded-lg text-center">
                 <p className="text-xs text-gray-500">Volume (AMV based)</p>
-                <p className="text-lg font-bold text-teal-700">{data.rinseLimit.volume_amv?.toFixed(2) || '0'} L</p>
+                <p className="text-lg font-bold text-teal-700">{formatNumber2(data.rinseLimit.volume_amv)} L</p>
               </div>
             </div>
 
@@ -151,17 +167,17 @@ export function Step5_RinseLimit({ data, onChange }: { data: any; onChange: (dat
                   <strong>Equipment:</strong> {selectedEquipment.name} ({selectedEquipment.surface_area} m²)
                 </p>
                 <p className="text-sm">
-                  <strong>MACO Used:</strong> {data.rinseLimit.maco_mg?.toFixed(2) || '0'} mg
+                  <strong>MACO Used:</strong> {formatNumber2(data.rinseLimit.maco_mg)} mg
                 </p>
               </div>
             )}
 
             <div className="p-3 bg-yellow-50 rounded-lg">
               <p className="text-sm text-yellow-800">
-                <strong>Acceptance Criteria:</strong> Rinse results must be below {data.rinseLimit.limit_ppm?.toFixed(2)} ppm
+                <strong>Acceptance Criteria:</strong> Rinse results must be below {formatNumber2(data.rinseLimit.limit_ppm)} ppm
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                Minimum rinse volume required: {data.rinseLimit.volume_loq?.toFixed(2)} L (to detect at LOQ)
+                Minimum rinse volume required: {formatNumber2(data.rinseLimit.volume_loq)} L (to detect at LOQ)
               </p>
             </div>
 
