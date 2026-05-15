@@ -29,7 +29,6 @@ export default function DashboardPage() {
   useEffect(() => {
     api.get('/dashboard/stats')
       .then((res) => {
-        // Backend returns { success: true, data: { ... } }
         const responseData = res.data.data || res.data
         setStats({
           products: responseData.products || 0,
@@ -46,7 +45,6 @@ export default function DashboardPage() {
         setLoading(false)
       })
       .catch(() => {
-        // Fallback data for demo/error case
         setStats({
           products: 0,
           equipment: 0,

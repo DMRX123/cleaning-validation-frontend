@@ -8,6 +8,7 @@ import Sidebar from '@/components/layout/sidebar'
 import { Breadcrumb } from '@/components/layout/breadcrumb'
 import api from '@/lib/api'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import toast from 'react-hot-toast'
 
 export default function EditValidationPage() {
   const params = useParams()
@@ -22,6 +23,7 @@ export default function EditValidationPage() {
         setSessionData(res.data)
       } catch (error) {
         console.error('Failed to fetch session:', error)
+        toast.error('Failed to load validation session')
       } finally {
         setLoading(false)
       }
@@ -33,6 +35,16 @@ export default function EditValidationPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <LoadingSpinner />
+      </div>
+    )
+  }
+
+  if (!sessionData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">Session not found</p>
+        </div>
       </div>
     )
   }
