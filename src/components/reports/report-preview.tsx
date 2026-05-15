@@ -8,6 +8,22 @@ import { Download, Eye, Printer } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
+interface SwabResult {
+  location_name: string
+  result_ppm: number
+  result_ppm_display?: string
+  reported: string
+  below_loq?: boolean
+}
+
+interface RinseResult {
+  equipment_name: string
+  result_ppm: number
+  result_ppm_display?: string
+  reported: string
+  below_loq?: boolean
+}
+
 interface ReportPreviewProps {
   sessionId: number
   sessionCode: string
@@ -16,8 +32,8 @@ interface ReportPreviewProps {
     next_product: { name: string; min_batch_size: number; max_batch_size: number; solubility: string }
     lowest_maco: number
     swab_limit_ppm: number
-    swab_results: Array<{ location_name: string; result_ppm: number; reported: string }>
-    rinse_results: Array<{ equipment_name: string; result_ppm: number; reported: string }>
+    swab_results: SwabResult[]
+    rinse_results: RinseResult[]
     status: string
     created_at: string
   }
@@ -26,6 +42,14 @@ interface ReportPreviewProps {
 
 export function ReportPreview({ sessionId, sessionCode, data, onDownload }: ReportPreviewProps) {
   const [loading, setLoading] = useState(false)
+
+  // Helper function to format PPM display
+  const formatPpmDisplay = (result: SwabResult | RinseResult): string => {
+    if (result.result_ppm_display) return result.result_ppm_display
+    if (result.below_loq) return 'Below LOQ'
+    if (typeof result.result_ppm === 'number' && result.result_ppm > 0) return result.result_ppm.toFixed(2)
+    return result.reported || '0'
+  }
 
   const handleDownload = async () => {
     setLoading(true)
@@ -57,7 +81,7 @@ export function ReportPreview({ sessionId, sessionCode, data, onDownload }: Repo
   }
 
   const allPassed = data.swab_results?.every(r => 
-    r.reported !== 'Below LOQ' && r.result_ppm < data.swab_limit_ppm
+    r.reported !== 'Below LOQ' && (r.result_ppm || 0) < data.swab_limit_ppm
   ) ?? true
 
   return (
@@ -148,11 +172,11 @@ export function ReportPreview({ sessionId, sessionCode, data, onDownload }: Repo
                 {data.swab_results.map((result, idx) => (
                   <tr key={idx} className="border-b">
                     <td className="p-2">{result.location_name}</td>
-                    <td className="p-2">{result.result_ppm?.toFixed(2) || '-'}</td>
+                    <td className="p-2">{formatPpmDisplay(result)}</td>
                     <td className="p-2">{data.swab_limit_ppm}</td>
                     <td className="p-2">
                       <Badge variant={result.reported === 'Below LOQ' ? 'outline' : 'default'}>
-                        {result.reported}
+                        {result.reported === 'Below LOQ' ? 'Below LOQ' : 'Acceptable'}
                       </Badge>
                     </td>
                   </tr>
@@ -178,10 +202,10 @@ export function ReportPreview({ sessionId, sessionCode, data, onDownload }: Repo
                 {data.rinse_results.map((result, idx) => (
                   <tr key={idx} className="border-b">
                     <td className="p-2">{result.equipment_name}</td>
-                    <td className="p-2">{result.result_ppm?.toFixed(2) || '-'}</td>
+                    <td className="p-2">{formatPpmDisplay(result)}</td>
                     <td className="p-2">
                       <Badge variant={result.reported === 'Below LOQ' ? 'outline' : 'default'}>
-                        {result.reported}
+                        {result.reported === 'Below LOQ' ? 'Below LOQ' : 'Acceptable'}
                       </Badge>
                     </td>
                   </tr>

@@ -273,22 +273,22 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-pharma-600" />
-        <p className="text-gray-500">Loading validation session...</p>
+      <div className="wizard-loading-container">
+        <Loader2 className="wizard-loading-spinner" />
+        <p className="wizard-loading-text">Loading validation session...</p>
       </div>
     )
   }
 
   return (
     <WizardContext.Provider value={{ data, setData, currentStep, goToStep, isStepValid, saveProgress }}>
-      <div className="max-w-6xl mx-auto">
+      <div className="wizard-container">
         {/* Error Banner */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <p className="text-sm text-red-700">{error}</p>
-            <button onClick={() => setError(null)} className="ml-auto text-red-600 hover:text-red-800">
+          <div className="wizard-error-banner">
+            <AlertCircle className="wizard-error-icon" />
+            <p className="wizard-error-text">{error}</p>
+            <button onClick={() => setError(null)} className="wizard-error-close">
               ×
             </button>
           </div>
@@ -303,28 +303,28 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
         />
 
         {/* Step Content */}
-        <Card className="mt-6">
-          <CardContent className="p-6">
+        <Card className="wizard-step-card">
+          <CardContent className="wizard-step-content">
             {renderStep()}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-4 border-t">
+            <div className="wizard-nav-container">
               <Button
                 variant="outline"
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
               >
-                <ChevronLeft className="h-4 w-4 mr-2" />
+                <ChevronLeft className="wizard-nav-icon" />
                 Previous
               </Button>
 
-              <div className="flex gap-2">
+              <div className="wizard-nav-buttons-group">
                 <Button 
                   variant="outline" 
                   onClick={saveProgress} 
                   disabled={saving || !data.sessionId}
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="wizard-nav-icon" />
                   {saving ? 'Saving...' : 'Save Progress'}
                 </Button>
 
@@ -332,10 +332,10 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
                   <Button 
                     onClick={handleComplete}
                     disabled={!isStepValid(currentStep)}
-                    className="bg-pharma-600 hover:bg-pharma-700"
+                    className="wizard-complete-btn"
                   >
                     Complete & View Report
-                    <ChevronRight className="h-4 w-4 ml-2" />
+                    <ChevronRight className="wizard-nav-icon" />
                   </Button>
                 ) : (
                   <Button 
@@ -343,7 +343,7 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
                     disabled={!isStepValid(currentStep)}
                   >
                     Next
-                    <ChevronRight className="h-4 w-4 ml-2" />
+                    <ChevronRight className="wizard-nav-icon" />
                   </Button>
                 )}
               </div>
@@ -352,13 +352,13 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
         </Card>
 
         {/* Progress Info */}
-        <div className="mt-4 text-center text-sm text-gray-500">
-          <p>
+        <div className="wizard-progress-container">
+          <p className="wizard-progress-text">
             Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].name}
           </p>
-          <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
+          <div className="wizard-progress-bar-bg">
             <div 
-              className="bg-pharma-600 h-1 rounded-full transition-all duration-300"
+              className="wizard-progress-bar-fill"
               style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
             />
           </div>

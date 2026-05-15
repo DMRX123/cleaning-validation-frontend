@@ -14,6 +14,22 @@ import { Breadcrumb } from '@/components/layout/breadcrumb'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import toast from 'react-hot-toast'
 
+interface SwabResult {
+  location_name: string
+  result_ppm: number
+  result_ppm_display?: string
+  reported: string
+  below_loq?: boolean
+}
+
+interface RinseResult {
+  equipment_name: string
+  result_ppm: number
+  result_ppm_display?: string
+  reported: string
+  below_loq?: boolean
+}
+
 interface ReportDetail {
   id: number
   session_code: string
@@ -24,8 +40,8 @@ interface ReportDetail {
   rinse_limit_ppm: number
   previous_product: { name: string; min_batch_size: number; max_batch_size: number }
   next_product: { name: string; min_batch_size: number; max_batch_size: number; solubility: string }
-  swab_results: Array<{ location_name: string; result_ppm: number; reported: string }>
-  rinse_results: Array<{ equipment_name: string; result_ppm: number; reported: string }>
+  swab_results: SwabResult[]
+  rinse_results: RinseResult[]
 }
 
 export default function ReportDetailPage() {
@@ -67,6 +83,14 @@ export default function ReportDetailPage() {
     }
   }
 
+  // Helper function to format PPM display
+  const formatPpmDisplay = (result: SwabResult | RinseResult): string => {
+    if (result.result_ppm_display) return result.result_ppm_display
+    if (result.below_loq) return 'Below LOQ'
+    if (typeof result.result_ppm === 'number' && result.result_ppm > 0) return result.result_ppm.toFixed(2)
+    return result.reported || '0'
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -91,7 +115,9 @@ export default function ReportDetailPage() {
     )
   }
 
-  const allPassed = report.swab_results?.every(r => r.reported !== 'Below LOQ' && r.result_ppm < 50) ?? true
+  const allPassed = report.swab_results?.every(r => 
+    r.reported !== 'Below LOQ' && (r.result_ppm || 0) < 50
+  ) ?? true
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -198,16 +224,16 @@ export default function ReportDetailPage() {
                         <th className="text-left py-2">Location</th>
                         <th className="text-left py-2">Result (ppm)</th>
                         <th className="text-left py-2">Status</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {report.swab_results.map((result, idx) => (
                         <tr key={idx} className="border-b">
                           <td className="py-2">{result.location_name}</td>
-                          <td className="py-2">{result.result_ppm?.toFixed(2) || '-'}</td>
+                          <td className="py-2">{formatPpmDisplay(result)}</td>
                           <td className="py-2">
-                            <Badge variant={result.reported === 'Below LOQ' ? 'success' : 'default'}>
-                              {result.reported}
+                            <Badge variant={result.reported === 'Below LOQ' ? 'outline' : 'default'}>
+                              {result.reported === 'Below LOQ' ? 'Below LOQ' : 'Acceptable'}
                             </Badge>
                           </td>
                         </tr>
@@ -231,16 +257,16 @@ export default function ReportDetailPage() {
                         <th className="text-left py-2">Equipment</th>
                         <th className="text-left py-2">Result (ppm)</th>
                         <th className="text-left py-2">Status</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {report.rinse_results.map((result, idx) => (
                         <tr key={idx} className="border-b">
                           <td className="py-2">{result.equipment_name}</td>
-                          <td className="py-2">{result.result_ppm?.toFixed(2) || '-'}</td>
+                          <td className="py-2">{formatPpmDisplay(result)}</td>
                           <td className="py-2">
-                            <Badge variant={result.reported === 'Below LOQ' ? 'success' : 'default'}>
-                              {result.reported}
+                            <Badge variant={result.reported === 'Below LOQ' ? 'outline' : 'default'}>
+                              {result.reported === 'Below LOQ' ? 'Below LOQ' : 'Acceptable'}
                             </Badge>
                           </td>
                         </tr>
