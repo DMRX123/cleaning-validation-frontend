@@ -1,3 +1,4 @@
+// Fixed StepIndicator.tsx
 'use client'
 
 import { cn } from '@/lib/utils'
@@ -33,56 +34,45 @@ export function StepIndicator({ steps, currentStep, getStepStatus, onStepClick }
   }
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between">
+    <div className="step-indicator-container">
+      <div className="step-indicator-list">
         {steps.map((step, index) => {
           const status = statusFn(step.id)
           const isCompleted = status === 'completed'
           const isCurrent = status === 'current'
           const isLocked = status === 'locked'
           
+          // Determine circle class
+          let circleClass = 'step-indicator-circle'
+          if (isCompleted) circleClass += ' step-indicator-circle-completed'
+          else if (isCurrent) circleClass += ' step-indicator-circle-current'
+          else if (isLocked) circleClass += ' step-indicator-circle-locked'
+          else circleClass += ' step-indicator-circle-pending'
+          
+          // Determine label class
+          let labelClass = 'step-indicator-label'
+          if (isCompleted) labelClass += ' step-indicator-label-completed'
+          else if (isCurrent) labelClass += ' step-indicator-label-current'
+          else if (isLocked) labelClass += ' step-indicator-label-locked'
+          else labelClass += ' step-indicator-label-pending'
+          
           return (
             <div 
               key={step.id} 
-              className="flex-1 relative cursor-pointer"
+              className="step-indicator-item"
               onClick={() => handleStepClick(step.id)}
             >
-              <div className="flex flex-col items-center">
-                <div
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all",
-                    isCompleted && "bg-pharma-600 text-white",
-                    isCurrent && "bg-pharma-100 border-2 border-pharma-600 text-pharma-600",
-                    isLocked && "bg-gray-200 text-gray-500 cursor-not-allowed",
-                    !isCompleted && !isCurrent && !isLocked && "bg-gray-100 text-gray-500",
-                    onStepClick && !isLocked && "hover:scale-105 transition-transform"
-                  )}
-                >
-                  {isCompleted ? <Check className="h-5 w-5" /> : isLocked ? <Lock className="h-4 w-4" /> : step.id}
-                </div>
-                <div className="mt-2 text-center">
-                  <div className={cn(
-                    "text-sm font-medium",
-                    isCurrent && "text-pharma-600",
-                    isCompleted && "text-pharma-600",
-                    isLocked && "text-gray-400",
-                    !isCompleted && !isCurrent && !isLocked && "text-gray-500"
-                  )}>
-                    {step.name}
-                  </div>
-                  <div className="text-xs text-gray-400 hidden sm:block">
-                    {step.description}
-                  </div>
-                </div>
+              <div className={circleClass}>
+                {isCompleted ? <Check className="step-indicator-check-icon" /> : isLocked ? <Lock className="h-4 w-4" /> : step.id}
               </div>
-              
+              <div className={labelClass}>
+                {step.name}
+              </div>
+              <div className="step-indicator-description">
+                {step.description}
+              </div>
               {index < steps.length - 1 && (
-                <div
-                  className={cn(
-                    "absolute top-5 left-1/2 w-[calc(100%-2rem)] h-0.5 -translate-y-1/2 transition-all",
-                    step.id < currentStep ? "bg-pharma-600" : "bg-gray-200"
-                  )}
-                />
+                <div className={`step-indicator-connector ${step.id < currentStep ? 'step-indicator-connector-active' : ''}`} />
               )}
             </div>
           )

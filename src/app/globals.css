@@ -19,17 +19,15 @@
 }
 
 /* ============================================ */
-/* WIZARD COMPONENT STYLES (No inline styles) */
+/* WIZARD COMPONENT STYLES */
 /* ============================================ */
 
-/* Wizard Container */
 .wizard-container {
   max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
 }
 
-/* Loading State */
 .wizard-loading-container {
   display: flex;
   flex-direction: column;
@@ -47,12 +45,8 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .wizard-loading-text {
@@ -60,7 +54,6 @@
   font-size: 0.875rem;
 }
 
-/* Error Banner */
 .wizard-error-banner {
   margin-bottom: 1rem;
   padding: 0.75rem;
@@ -98,7 +91,6 @@
   color: #991b1b;
 }
 
-/* Step Card */
 .wizard-step-card {
   margin-top: 1.5rem;
 }
@@ -107,7 +99,6 @@
   padding: 1.5rem;
 }
 
-/* Navigation Buttons Container */
 .wizard-nav-container {
   display: flex;
   justify-content: space-between;
@@ -136,7 +127,6 @@
   background-color: #1b4d3e;
 }
 
-/* Progress Bar */
 .wizard-progress-container {
   margin-top: 1rem;
   text-align: center;
@@ -162,6 +152,42 @@
   border-radius: 9999px;
   transition: width 0.3s ease;
 }
+
+/* Progress width classes - NO INLINE STYLES */
+.progress-width-0 { width: 0%; }
+.progress-width-5 { width: 5%; }
+.progress-width-10 { width: 10%; }
+.progress-width-15 { width: 15%; }
+.progress-width-20 { width: 20%; }
+.progress-width-25 { width: 25%; }
+.progress-width-30 { width: 30%; }
+.progress-width-35 { width: 35%; }
+.progress-width-40 { width: 40%; }
+.progress-width-45 { width: 45%; }
+.progress-width-50 { width: 50%; }
+.progress-width-55 { width: 55%; }
+.progress-width-60 { width: 60%; }
+.progress-width-65 { width: 65%; }
+.progress-width-70 { width: 70%; }
+.progress-width-75 { width: 75%; }
+.progress-width-80 { width: 80%; }
+.progress-width-85 { width: 85%; }
+.progress-width-90 { width: 90%; }
+.progress-width-95 { width: 95%; }
+.progress-width-100 { width: 100%; }
+
+/* For capability progress bar */
+.capability-progress-width-0 { width: 0%; }
+.capability-progress-width-10 { width: 10%; }
+.capability-progress-width-20 { width: 20%; }
+.capability-progress-width-30 { width: 30%; }
+.capability-progress-width-40 { width: 40%; }
+.capability-progress-width-50 { width: 50%; }
+.capability-progress-width-60 { width: 60%; }
+.capability-progress-width-70 { width: 70%; }
+.capability-progress-width-80 { width: 80%; }
+.capability-progress-width-90 { width: 90%; }
+.capability-progress-width-100 { width: 100%; }
 
 /* ============================================ */
 /* STEP INDICATOR STYLES */
@@ -199,7 +225,6 @@
   position: relative;
 }
 
-/* Step Circle Variants */
 .step-indicator-circle-completed {
   background-color: #2d6a4f;
   color: white;
@@ -227,7 +252,6 @@
   width: 1rem;
 }
 
-/* Step Labels */
 .step-indicator-label {
   font-size: 0.75rem;
   font-weight: 500;
@@ -256,7 +280,6 @@
   margin-top: 0.25rem;
 }
 
-/* Step Connector Line */
 .step-indicator-connector {
   position: absolute;
   top: 1.25rem;
@@ -271,130 +294,175 @@
   background-color: #2d6a4f;
 }
 
-/* Responsive Step Indicator */
 @media (max-width: 640px) {
   .step-indicator-circle {
     width: 2rem;
     height: 2rem;
     font-size: 0.7rem;
   }
-  
   .step-indicator-label {
     font-size: 0.65rem;
   }
-  
   .step-indicator-description {
     display: none;
   }
-  
   .step-indicator-connector {
     top: 1rem;
   }
 }
 
 /* ============================================ */
-/* FORM STEP STYLES */
+/* CAPABILITY ANALYSIS STYLES */
 /* ============================================ */
 
-.form-step-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-step-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.form-step-description {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1rem;
-}
-
-.form-grid {
+.capability-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
 @media (min-width: 768px) {
-  .form-grid-2 {
-    grid-template-columns: repeat(2, 1fr);
+  .capability-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
-/* ============================================ */
-/* RESULTS TABLE STYLES */
-/* ============================================ */
+.capability-card {
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  text-align: center;
+}
 
-.results-table {
+.capability-card-title {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.capability-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d6a4f;
+}
+
+.capability-card-value-green {
+  color: #16a34a;
+}
+
+.capability-card-value-yellow {
+  color: #ca8a04;
+}
+
+.capability-card-value-red {
+  color: #dc2626;
+}
+
+.margin-card {
+  padding: 1rem;
+  background-color: #eff6ff;
+  border-radius: 0.5rem;
+}
+
+.margin-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e40af;
+}
+
+.margin-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.margin-distance {
+  font-size: 0.75rem;
+  color: #1e40af;
+  margin-top: 0.5rem;
+}
+
+.recommendation-card {
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.recommendation-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.recommendation-text {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.recommendation-note {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* Risk Badges */
+.risk-low {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.risk-medium {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.risk-high {
+  background-color: #ffedd5;
+  color: #9a3412;
+}
+
+.risk-critical {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.risk-default {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+/* Progress Bar */
+.progress-bar-bg {
   width: 100%;
-  border-collapse: collapse;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
 }
 
-.results-table th {
-  text-align: left;
-  padding: 0.5rem;
-  background-color: #f9fafb;
-  font-weight: 600;
-  font-size: 0.875rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.results-table td {
-  padding: 0.5rem;
-  border-bottom: 1px solid #f3f4f6;
-  font-size: 0.875rem;
-}
-
-.results-table tr:hover {
-  background-color: #f9fafb;
-}
-
-/* ============================================ */
-/* CARD HOVER EFFECTS */
-/* ============================================ */
-
-.card-hover {
-  transition: box-shadow 0.2s ease;
-}
-
-.card-hover:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+.progress-bar-fill {
+  background-color: #2d6a4f;
+  height: 0.5rem;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
 }
 
 /* ============================================ */
 /* UTILITY CLASSES */
 /* ============================================ */
 
-.text-pharma-600 {
-  color: #2d6a4f;
-}
+.text-pharma-600 { color: #2d6a4f; }
+.text-pharma-700 { color: #1b4d3e; }
+.bg-pharma-50 { background-color: #f0fdf4; }
+.bg-pharma-100 { background-color: #dcfce7; }
+.bg-pharma-600 { background-color: #2d6a4f; }
+.bg-pharma-600:hover { background-color: #1b4d3e; }
+.border-pharma-200 { border-color: #bbf7d0; }
 
-.text-pharma-700 {
-  color: #1b4d3e;
+.card-hover {
+  transition: box-shadow 0.2s ease;
 }
-
-.bg-pharma-50 {
-  background-color: #f0fdf4;
-}
-
-.bg-pharma-100 {
-  background-color: #dcfce7;
-}
-
-.bg-pharma-600 {
-  background-color: #2d6a4f;
-}
-
-.bg-pharma-600:hover {
-  background-color: #1b4d3e;
-}
-
-.border-pharma-200 {
-  border-color: #bbf7d0;
+.card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }

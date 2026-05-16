@@ -196,13 +196,11 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
   }
 
   const handleNext = async () => {
-    // Validate current step
     if (!isStepValid(currentStep)) {
       toast.error(`Please complete all required fields in ${STEPS[currentStep - 1].name}`)
       return
     }
 
-    // Create session if on step 1 and no session exists
     if (currentStep === 1 && !data.sessionId) {
       const newSessionId = await createSession()
       if (!newSessionId) return
@@ -229,26 +227,16 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
     const stepProps = { data, onChange: setData }
     
     switch (currentStep) {
-      case 1:
-        return <Step1_SelectProducts {...stepProps} />
-      case 2:
-        return <Step2_EquipmentDetails {...stepProps} />
-      case 3:
-        return <Step3_MACO {...stepProps} />
-      case 4:
-        return <Step4_SwabLimit {...stepProps} />
-      case 5:
-        return <Step5_RinseLimit {...stepProps} />
-      case 6:
-        return <Step6_Standards {...stepProps} />
-      case 7:
-        return <Step7_SwabResults {...stepProps} />
-      case 8:
-        return <Step8_RinseResults {...stepProps} />
-      case 9:
-        return <Step9_ReviewReport {...stepProps} />
-      default:
-        return null
+      case 1: return <Step1_SelectProducts {...stepProps} />
+      case 2: return <Step2_EquipmentDetails {...stepProps} />
+      case 3: return <Step3_MACO {...stepProps} />
+      case 4: return <Step4_SwabLimit {...stepProps} />
+      case 5: return <Step5_RinseLimit {...stepProps} />
+      case 6: return <Step6_Standards {...stepProps} />
+      case 7: return <Step7_SwabResults {...stepProps} />
+      case 8: return <Step8_RinseResults {...stepProps} />
+      case 9: return <Step9_ReviewReport {...stepProps} />
+      default: return null
     }
   }
 
@@ -258,7 +246,6 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
     }
     if (stepId === currentStep) return 'current'
     if (stepId > currentStep) {
-      // Check if previous steps are valid
       let allPreviousValid = true
       for (let i = 1; i < stepId; i++) {
         if (!isStepValid(i)) {
@@ -271,8 +258,11 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
     return 'pending'
   }
 
-  // Calculate progress percentage
-  const progressPercentage = (currentStep / STEPS.length) * 100
+  const getProgressClass = () => {
+    const percent = Math.floor((currentStep / STEPS.length) * 100)
+    const rounded = Math.round(percent / 5) * 5
+    return `progress-width-${rounded}`
+  }
 
   if (loading) {
     return (
@@ -286,7 +276,6 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
   return (
     <WizardContext.Provider value={{ data, setData, currentStep, goToStep, isStepValid, saveProgress }}>
       <div className="wizard-container">
-        {/* Error Banner */}
         {error && (
           <div className="wizard-error-banner">
             <AlertCircle className="wizard-error-icon" />
@@ -297,7 +286,6 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
           </div>
         )}
 
-        {/* Step Indicator */}
         <StepIndicator 
           steps={STEPS.map(s => ({ id: s.id, name: s.name, description: s.description }))}
           currentStep={currentStep}
@@ -305,46 +293,29 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
           onStepClick={goToStep}
         />
 
-        {/* Step Content */}
         <Card className="wizard-step-card">
           <CardContent className="wizard-step-content">
             {renderStep()}
 
-            {/* Navigation Buttons */}
             <div className="wizard-nav-container">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-              >
+              <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1}>
                 <ChevronLeft className="wizard-nav-icon" />
                 Previous
               </Button>
 
               <div className="wizard-nav-buttons-group">
-                <Button 
-                  variant="outline" 
-                  onClick={saveProgress} 
-                  disabled={saving || !data.sessionId}
-                >
+                <Button variant="outline" onClick={saveProgress} disabled={saving || !data.sessionId}>
                   <Save className="wizard-nav-icon" />
                   {saving ? 'Saving...' : 'Save Progress'}
                 </Button>
 
                 {currentStep === STEPS.length ? (
-                  <Button 
-                    onClick={handleComplete}
-                    disabled={!isStepValid(currentStep)}
-                    className="wizard-complete-btn"
-                  >
+                  <Button onClick={handleComplete} disabled={!isStepValid(currentStep)} className="wizard-complete-btn">
                     Complete & View Report
                     <ChevronRight className="wizard-nav-icon" />
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={handleNext}
-                    disabled={!isStepValid(currentStep)}
-                  >
+                  <Button onClick={handleNext} disabled={!isStepValid(currentStep)}>
                     Next
                     <ChevronRight className="wizard-nav-icon" />
                   </Button>
@@ -354,16 +325,12 @@ export function Wizard({ sessionId, initialData, onComplete }: WizardProps) {
           </CardContent>
         </Card>
 
-        {/* Progress Info */}
         <div className="wizard-progress-container">
           <p className="wizard-progress-text">
             Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].name}
           </p>
-          <div 
-            className="wizard-progress-bar-bg"
-            data-progress={progressPercentage}
-          >
-            <div className="wizard-progress-bar-fill" />
+          <div className="wizard-progress-bar-bg">
+            <div className={`wizard-progress-bar-fill ${getProgressClass()}`} />
           </div>
         </div>
       </div>

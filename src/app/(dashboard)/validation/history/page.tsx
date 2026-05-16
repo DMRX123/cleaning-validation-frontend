@@ -1,3 +1,4 @@
+// Replace current code with this fixed version
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -37,6 +38,7 @@ export default function ValidationHistoryPage() {
   const fetchSessions = async () => {
     try {
       const res = await api.get('/validation/history')
+      // Ensure we have the nested product objects
       setSessions(res.data)
     } catch (error) {
       toast.error('Failed to fetch validation history')
@@ -63,20 +65,20 @@ export default function ValidationHistoryPage() {
     }
   }
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'COMPLETED':
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Completed</Badge>
-    case 'IN_PROGRESS':
-      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">In Progress</Badge>
-    case 'DRAFT':
-      return <Badge variant="secondary">Draft</Badge>
-    case 'APPROVED':
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Approved</Badge>
-    default:
-      return <Badge variant="outline">{status}</Badge>
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>
+      case 'IN_PROGRESS':
+        return <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>
+      case 'DRAFT':
+        return <Badge variant="secondary">Draft</Badge>
+      case 'APPROVED':
+        return <Badge className="bg-blue-100 text-blue-800">Approved</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
   }
-}
 
   const filteredSessions = sessions.filter(s =>
     s.session_code.toLowerCase().includes(search.toLowerCase()) ||
