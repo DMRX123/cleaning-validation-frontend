@@ -1,28 +1,38 @@
 // src/lib/api.ts
 import axios from 'axios'
 
-// HARDCODED for Vercel deployment
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 const api = axios.create({
-  baseURL: 'https://cleaning-validation-backend.onrender.com/api',
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+// Request interceptor - Add auth token
+api.interceptors.request.use(
+  (config) => {
+    // For demo, use dummy admin token since backend has no auth
+    const token = localStorage.getItem('token') || 'dummy_admin_token_for_development'
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
 
+// Response interceptor - Handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

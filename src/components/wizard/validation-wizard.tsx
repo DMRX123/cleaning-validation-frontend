@@ -1,3 +1,4 @@
+// src/components/wizard/validation-wizard.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -64,7 +65,6 @@ export function ValidationWizard({ sessionId, initialData }: ValidationWizardPro
   }
 
   const handleNext = async () => {
-    // Check if products are selected before creating session
     if (currentStep === 1 && !sessionData.sessionId) {
       if (!sessionData.previousProductId || !sessionData.nextProductId) {
         toast.error('Please select both previous and next products')
@@ -81,7 +81,6 @@ export function ValidationWizard({ sessionId, initialData }: ValidationWizardPro
         setSessionData({ ...sessionData, sessionId: res.data.id, sessionCode: res.data.session_code })
         toast.success('Session created successfully')
       } catch (error: any) {
-        console.error('Session creation error:', error.response?.data || error.message)
         toast.error(error.response?.data?.detail || 'Failed to create session')
         setSaving(false)
         return
@@ -156,10 +155,12 @@ export function ValidationWizard({ sessionId, initialData }: ValidationWizardPro
             </Button>
             
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleSaveProgress} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
-                {saving ? 'Saving...' : 'Save Progress'}
-              </Button>
+              {sessionData.sessionId && (
+                <Button variant="outline" onClick={handleSaveProgress} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Progress'}
+                </Button>
+              )}
               
               {currentStep === steps.length ? (
                 <Button onClick={() => router.push(`/reports/${sessionData.sessionId}`)}>

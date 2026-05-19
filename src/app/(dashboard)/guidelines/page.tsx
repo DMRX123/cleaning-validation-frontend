@@ -1,18 +1,23 @@
+// src/app/(dashboard)/guidelines/page.tsx
 'use client'
 
-import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CleaningLevelSelector } from '@/components/cleaning-levels/CleaningLevelSelector'
 import { HoldTimeValidator } from '@/components/hold-time/HoldTimeValidator'
 import { MicrobiologicalLimits } from '@/components/microbiological/MicrobiologicalLimits'
 import { WorstCaseMatrix } from '@/components/bracketing/WorstCaseMatrix'
-import { ProtocolGenerator } from '@/components/protocols/ProtocolGenerator'
-import { ProtocolExecution } from '@/components/protocols/ProtocolExecution'
+import { FMEAMatrix } from '@/components/fmea/FMEAMatrix'
+import { RecoveryStudyManager } from '@/components/recovery/RecoveryStudyManager'
+import { NitrosamineAssessment } from '@/components/nitrosamine/NitrosamineAssessment'
+import { OperatorQualificationManager } from '@/components/operator-qualification/OperatorQualificationManager'
+import { BracketingGroupManager } from '@/components/bracketing/BracketingGroupManager'
+import { ProtocolManager } from '@/components/protocols/ProtocolManager'
 import Header from '@/components/layout/header'
 import Sidebar from '@/components/layout/sidebar'
 import { Breadcrumb } from '@/components/layout/breadcrumb'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, FileText, Clock, Microscope, Trophy, ClipboardCheck } from 'lucide-react'
+import { BookOpen, Clock, Microscope, Trophy, AlertTriangle, FlaskConical, Radiation, GraduationCap, GitBranch, FileText } from 'lucide-react'
+import { useState } from 'react'
 
 export default function GuidelinesPage() {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([])
@@ -27,11 +32,11 @@ export default function GuidelinesPage() {
           <Breadcrumb />
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl font-bold text-pharma-700 mb-6">
-              APIC Cleaning Validation Guide Implementation
+              APIC Cleaning Validation Guide - Complete Implementation
             </h1>
 
             <Tabs defaultValue="cleaning-levels">
-              <TabsList className="mb-6">
+              <TabsList className="flex flex-wrap h-auto mb-6">
                 <TabsTrigger value="cleaning-levels">
                   <BookOpen className="h-4 w-4 mr-2" />
                   Cleaning Levels
@@ -46,15 +51,27 @@ export default function GuidelinesPage() {
                 </TabsTrigger>
                 <TabsTrigger value="bracketing">
                   <Trophy className="h-4 w-4 mr-2" />
-                  Worst Case/Rating
+                  Bracketing/Worst Case
+                </TabsTrigger>
+                <TabsTrigger value="fmea">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  FMEA (Section 8.1)
+                </TabsTrigger>
+                <TabsTrigger value="recovery">
+                  <FlaskConical className="h-4 w-4 mr-2" />
+                  Recovery Studies
+                </TabsTrigger>
+                <TabsTrigger value="nitrosamine">
+                  <Radiation className="h-4 w-4 mr-2" />
+                  Nitrosamines
+                </TabsTrigger>
+                <TabsTrigger value="operator">
+                  <GraduationCap className="h-4 w-4 mr-2" />
+                  Operator Qualification
                 </TabsTrigger>
                 <TabsTrigger value="protocols">
                   <FileText className="h-4 w-4 mr-2" />
                   Protocols
-                </TabsTrigger>
-                <TabsTrigger value="execution">
-                  <ClipboardCheck className="h-4 w-4 mr-2" />
-                  Execution
                 </TabsTrigger>
               </TabsList>
 
@@ -77,35 +94,34 @@ export default function GuidelinesPage() {
               </TabsContent>
 
               <TabsContent value="bracketing">
-                <WorstCaseMatrix productIds={[1, 2, 3, 4, 5]} />
+                <div className="space-y-6">
+                  <BracketingGroupManager />
+                  <WorstCaseMatrix productIds={selectedProducts.length ? selectedProducts : [1, 2, 3, 4, 5]} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="fmea">
+                <FMEAMatrix />
+              </TabsContent>
+
+              <TabsContent value="recovery">
+                <RecoveryStudyManager />
+              </TabsContent>
+
+              <TabsContent value="nitrosamine">
+                <NitrosamineAssessment />
+              </TabsContent>
+
+              <TabsContent value="operator">
+                <OperatorQualificationManager />
               </TabsContent>
 
               <TabsContent value="protocols">
-                <ProtocolGenerator
+                <ProtocolManager
                   equipmentId={1}
                   previousProductId={1}
                   nextProductId={2}
                 />
-              </TabsContent>
-
-              <TabsContent value="execution">
-                {selectedProtocol ? (
-                  <ProtocolExecution
-                    protocolId={selectedProtocol}
-                    onComplete={() => setSelectedProtocol(null)}
-                  />
-                ) : (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Protocol Execution</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-500">
-                        First generate a protocol from the Protocols tab, then execute it here.
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
               </TabsContent>
             </Tabs>
 
@@ -126,7 +142,11 @@ export default function GuidelinesPage() {
                   </div>
                   <div className="p-2 bg-white rounded">
                     <strong>Section 8.1</strong><br />
-                    Microbiological Testing
+                    Microbiological Testing & FMEA
+                  </div>
+                  <div className="p-2 bg-white rounded">
+                    <strong>Section 8.3</strong><br />
+                    Recovery Studies
                   </div>
                   <div className="p-2 bg-white rounded">
                     <strong>Section 9.7</strong><br />
@@ -141,12 +161,16 @@ export default function GuidelinesPage() {
                     Revalidation & Change Control
                   </div>
                   <div className="p-2 bg-white rounded">
-                    <strong>Section 4.2.1</strong><br />
-                    ADE/PDE Calculation
+                    <strong>Section 11</strong><br />
+                    Operator Qualification
                   </div>
                   <div className="p-2 bg-white rounded">
-                    <strong>Section 4.2.6</strong><br />
-                    Different Limits Rationale
+                    <strong>Section 13</strong><br />
+                    Nitrosamines Risk Assessment
+                  </div>
+                  <div className="p-2 bg-white rounded">
+                    <strong>Section 4.2.1</strong><br />
+                    ADE/PDE Calculation
                   </div>
                 </div>
               </CardContent>

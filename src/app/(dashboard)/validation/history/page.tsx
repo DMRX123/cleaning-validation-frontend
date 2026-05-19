@@ -1,4 +1,4 @@
-// Replace current code with this fixed version
+// src/app/(dashboard)/validation/history/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -24,6 +24,8 @@ interface ValidationSession {
   created_at: string
   previous_product?: { name: string }
   next_product?: { name: string }
+  previous_product_name?: string
+  next_product_name?: string
 }
 
 export default function ValidationHistoryPage() {
@@ -38,10 +40,21 @@ export default function ValidationHistoryPage() {
   const fetchSessions = async () => {
     try {
       const res = await api.get('/validation/history')
-      // Ensure we have the nested product objects
-      setSessions(res.data)
+      // Handle both array and object responses
+      let sessionsData = res.data
+      if (res.data.sessions) {
+        sessionsData = res.data.sessions
+      }
+      if (res.data.data) {
+        sessionsData = res.data.data
+      }
+      // Ensure it's an array
+      const sessionsArray = Array.isArray(sessionsData) ? sessionsData : []
+      setSessions(sessionsArray)
     } catch (error) {
+      console.error('Failed to fetch validation history:', error)
       toast.error('Failed to fetch validation history')
+      setSessions([])
     } finally {
       setLoading(false)
     }
@@ -66,25 +79,31 @@ export default function ValidationHistoryPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>
-      case 'IN_PROGRESS':
-        return <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>
-      case 'DRAFT':
-        return <Badge variant="secondary">Draft</Badge>
-      case 'APPROVED':
-        return <Badge className="bg-blue-100 text-blue-800">Approved</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+    const statusMap: Record<string, { label: string; className: string }> = {
+      COMPLETED: { label: 'Completed', className: 'bg-green-100 text-green-800' },
+      IN_PROGRESS: { label: 'In Progress', className: 'bg-yellow-100 text-yellow-800' },
+      DRAFT: { label: 'Draft', className: 'bg-gray-100 text-gray-800' },
+      APPROVED: { label: 'Approved', className: 'bg-blue-100 text-blue-800' },
     }
+    const info = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    return <Badge className={info.className}>{info.label}</Badge>
   }
 
   const filteredSessions = sessions.filter(s =>
-    s.session_code.toLowerCase().includes(search.toLowerCase()) ||
+    s.session_code?.toLowerCase().includes(search.toLowerCase()) ||
     s.previous_product?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.next_product?.name?.toLowerCase().includes(search.toLowerCase())
+    s.next_product?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.previous_product_name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.next_product_name?.toLowerCase().includes(search.toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pharma-600"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,58 +131,58 @@ export default function ValidationHistoryPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">Loading...</div>
-                ) : filteredSessions.length === 0 ? (
+                {filteredSessions.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     No validation sessions found
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Session Code</TableHead>
-                        <TableHead>Previous Product</TableHead>
-                        <TableHead>Next Product</TableHead>
-                        <TableHead>Lowest MACO (mg)</TableHead>
-                        <TableHead>Swab Limit (ppm)</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredSessions.map((session) => (
-                        <TableRow key={session.id}>
-                          <TableCell className="font-mono text-sm">{session.session_code}</TableCell>
-                          <TableCell>{session.previous_product?.name || 'N/A'}</TableCell>
-                          <TableCell>{session.next_product?.name || 'N/A'}</TableCell>
-                          <TableCell>{session.lowest_maco?.toFixed(2) || '-'}</TableCell>
-                          <TableCell>{session.swab_limit_ppm?.toFixed(2) || '-'}</TableCell>
-                          <TableCell>{getStatusBadge(session.status)}</TableCell>
-                          <TableCell className="text-sm">
-                            {new Date(session.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Link href={`/validation/${session.id}`}>
-                                <Button variant="ghost" size="sm">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => downloadReport(session.id, session.session_code)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Session Code</TableHead>
+                          <TableHead>Previous Product</TableHead>
+                          <TableHead>Next Product</TableHead>
+                          <TableHead>Lowest MACO (mg)</TableHead>
+                          <TableHead>Swab Limit (ppm)</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredSessions.map((session) => (
+                          <TableRow key={session.id}>
+                            <TableCell className="font-mono text-sm">{session.session_code}</TableCell>
+                            <TableCell>{session.previous_product?.name || session.previous_product_name || 'N/A'}</TableCell>
+                            <TableCell>{session.next_product?.name || session.next_product_name || 'N/A'}</TableCell>
+                            <TableCell>{session.lowest_maco?.toFixed(2) || '-'}</TableCell>
+                            <TableCell>{session.swab_limit_ppm?.toFixed(2) || '-'}</TableCell>
+                            <TableCell>{getStatusBadge(session.status)}</TableCell>
+                            <TableCell className="text-sm">
+                              {new Date(session.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Link href={`/validation/${session.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => downloadReport(session.id, session.session_code)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>

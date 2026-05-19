@@ -1,9 +1,5 @@
 // src/types/api.ts
-// Complete TypeScript interfaces for Cleaning Validation System
-
-// ============================================
-// AUTH TYPES
-// ============================================
+// COMPLETE TYPES - ALL MISSING TYPES ADDED
 
 export interface LoginRequest {
   username: string;
@@ -298,7 +294,7 @@ export type CleaningDifficulty =
 export type CleaningLevel = 'LEVEL_0' | 'LEVEL_1' | 'LEVEL_2';
 
 // ============================================
-// APIC GUIDELINE TYPES (Sections 4.2.6, 5.0, 7.0, 8.1, 9.0, 9.7)
+// APIC GUIDELINE TYPES
 // ============================================
 
 export interface CleaningLevelResponse {
@@ -378,7 +374,7 @@ export interface LimitRationaleResponse {
 }
 
 // ============================================
-// VALIDATION PROTOCOL TYPES (Section 9.0)
+// VALIDATION PROTOCOL TYPES
 // ============================================
 
 export interface ValidationProtocol {
@@ -537,7 +533,7 @@ export interface ErrorResponse {
 }
 
 // ============================================
-// CHANGE CONTROL TYPES (Section 10.0)
+// CHANGE CONTROL TYPES
 // ============================================
 
 export interface ChangeControl {
@@ -565,7 +561,7 @@ export interface ChangeControl {
 }
 
 // ============================================
-// TRAINING TYPES (Section 9.8)
+// TRAINING TYPES
 // ============================================
 
 export interface TrainingModule {
@@ -588,4 +584,473 @@ export interface TrainingRecord {
   score: number | null;
   is_passed: boolean;
   certificate_issued: boolean;
+}
+
+// ============================================
+// FMEA Risk Assessment Types
+// ============================================
+
+export interface FMEARiskAssessment {
+  id: number
+  equipment_id: number
+  equipment_name?: string
+  failure_mode: string
+  location_description: string | null
+  severity: number
+  occurrence: number
+  detection: number
+  rpn: number
+  risk_level: 'Low' | 'Medium' | 'High'
+  is_sampling_point: boolean
+  sampling_method: 'swab' | 'rinse' | 'contact_plate'
+  sampling_area_cm2: number
+  justification: string | null
+  mitigation_controls: string | null
+  created_at: string
+}
+
+export interface FMEACreate {
+  equipment_id: number
+  failure_mode: string
+  location_description?: string
+  severity: number
+  occurrence: number
+  detection: number
+  is_sampling_point?: boolean
+  sampling_method?: string
+  sampling_area_cm2?: number
+  justification?: string
+  mitigation_controls?: string
+}
+
+// ============================================
+// Recovery Study Types
+// ============================================
+
+export interface RecoveryStudy {
+  id: number
+  product_id: number
+  product_name?: string
+  material_of_construction: string
+  recovery_percent: number
+  correction_factor: number
+  study_date: string
+  report_reference: string | null
+  is_valid: boolean
+  valid_until: string | null
+  notes: string | null
+}
+
+export interface RecoveryStudyCreate {
+  product_id: number
+  material_of_construction: string
+  recovery_percent: number
+  study_date?: string
+  report_reference?: string
+  notes?: string
+}
+
+// ============================================
+// Nitrosamine Risk Assessment Types
+// ============================================
+
+export interface NitrosamineRiskAssessment {
+  id: number
+  product_id: number
+  product_name?: string
+  secondary_amine_present: boolean
+  tertiary_amine_present: boolean
+  primary_amine_present: boolean
+  nitrite_in_raw_materials: boolean
+  recovered_solvents_used: boolean
+  nitrosating_agents_used: boolean
+  low_ph_conditions: boolean
+  high_temperature_used: boolean
+  temperature_threshold_c: number | null
+  water_nitrite_level_ppm: number | null
+  chloramines_in_water: boolean
+  shared_with_nitrosating_products: boolean
+  overall_risk_level: 'Low' | 'Medium' | 'High'
+  risk_justification: string | null
+  requires_confirmatory_testing: boolean
+  mitigation_plan: string | null
+  assessment_date: string
+  assessed_by: string
+}
+
+export interface NitrosamineCreate {
+  product_id: number
+  assessed_by: string
+  secondary_amine_present?: boolean
+  tertiary_amine_present?: boolean
+  primary_amine_present?: boolean
+  nitrite_in_raw_materials?: boolean
+  nitrosating_agents_used?: boolean
+  low_ph_conditions?: boolean
+  high_temperature_used?: boolean
+}
+
+// ============================================
+// Operator Qualification Types
+// ============================================
+
+export interface OperatorQualification {
+  id: number
+  user_id: number
+  username?: string
+  eyesight_certified: boolean
+  eyesight_certified_date: string | null
+  eyesight_certified_by: string | null
+  left_eye_vision: string | null
+  right_eye_vision: string | null
+  color_blindness_test_passed: boolean
+  color_blindness_test_date: string | null
+  training_completed: boolean
+  training_date: string | null
+  training_duration_hours: number | null
+  trainer_name: string | null
+  training_scores: number | null
+  practical_demo_passed: boolean
+  practical_demo_date: string | null
+  qualification_valid_until: string | null
+  qualified_by: string | null
+  is_active: boolean
+}
+
+export interface OperatorQualificationCreate {
+  user_id: number
+  qualified_by: string
+}
+
+// ============================================
+// Bracketing Group Types
+// ============================================
+
+export interface BracketingGroup {
+  id: number
+  name: string
+  equipment_type: string
+  cleaning_procedure_class: string
+  description: string | null
+  products?: BracketingProduct[]
+  worst_case?: BracketingWorstCase
+  created_at: string
+}
+
+export interface BracketingProduct {
+  id: number
+  group_id: number
+  product_id: number
+  product_name?: string
+  rating_hardest_to_clean: number
+  rating_solubility: number
+  rating_toxicity: number
+  rating_dose: number
+  total_rating: number
+  is_worst_case: boolean
+}
+
+export interface BracketingWorstCase {
+  id: number
+  group_id: number
+  product_id: number
+  product_name?: string
+  selection_justification: string
+  validation_completed: boolean
+  validation_session_id: number | null
+}
+
+export interface BracketingGroupCreate {
+  name: string
+  equipment_type: string
+  cleaning_procedure_class: string
+  description?: string
+}
+
+// ============================================
+// Validation Protocol Extended Types
+// ============================================
+
+export interface ProtocolTemplate {
+  id: number
+  template_name: string
+  template_section: string
+  content_html: string | null
+  content_json: any
+  version: number
+  is_active: boolean
+}
+
+export interface CleaningValidationProtocol {
+  id: number
+  protocol_number: string
+  revision: string
+  product_id: number
+  product_name?: string
+  date_of_issue: string
+  location: string
+  manufacturing_block: string | null
+  batch_size_range: string | null
+  prepared_by: string
+  prepared_date: string | null
+  checked_by_production: string | null
+  checked_by_production_date: string | null
+  checked_by_ppa: string | null
+  checked_by_ppa_date: string | null
+  checked_by_engineering: string | null
+  checked_by_engineering_date: string | null
+  checked_by_qc: string | null
+  checked_by_qc_date: string | null
+  checked_by_qa: string | null
+  checked_by_qa_date: string | null
+  approved_by: string | null
+  approved_date: string | null
+  campaign_max_batches: number
+  campaign_max_days: number
+  dht_hours: number
+  cht_days: number
+  apply_recovery_correction: boolean
+  custom_introduction: string | null
+  custom_objective: string | null
+  custom_scope: string | null
+  custom_responsibilities: string | null
+  status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED' | 'OBSOLETE'
+  pdf_path: string | null
+  pdf_generated_at: string | null
+}
+
+// ============================================
+// Dynamic Report Editable Sections
+// ============================================
+
+export interface ReportEditableSections {
+  introduction?: string
+  objective?: string
+  scope?: string
+  conclusion?: string
+  recommendations?: string
+  deviations?: string
+}
+
+// ============================================
+// Protocol Editable Sections
+// ============================================
+
+export interface ProtocolEditableSections {
+  background?: string
+  purpose?: string
+  scope?: string
+  responsibilities?: string
+  acceptance_criteria?: string
+  revalidation_strategy?: string
+}
+
+// ============================================
+// HOLD TIME TYPES - MISSING (ADDED)
+// ============================================
+
+export interface DirtyHoldTime {
+  id: number
+  equipment_id: number
+  equipment_name?: string
+  product_name: string
+  batch_number: string
+  end_of_batch_time: string
+  cleaning_start_time: string
+  actual_dht_hours: number
+  max_validated_dht_hours: number
+  is_within_limit: boolean
+  is_validated: boolean
+  investigation_required: boolean
+  investigation_notes: string | null
+  corrective_action: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface DirtyHoldTimeCreate {
+  equipment_id: number
+  product_name: string
+  batch_number: string
+  end_of_batch_time: string
+  cleaning_start_time: string
+  max_validated_dht_hours?: number
+  created_by?: string
+}
+
+export interface DirtyHoldTimeUpdate {
+  cleaning_start_time?: string
+  investigation_required?: boolean
+  investigation_notes?: string
+  corrective_action?: string
+}
+
+export interface CleanHoldTime {
+  id: number
+  equipment_id: number
+  equipment_name?: string
+  cleaning_completion_time: string
+  next_use_time: string
+  actual_cht_hours: number
+  max_validated_cht_hours: number
+  is_within_limit: boolean
+  is_validated: boolean
+  storage_conditions: string
+  microbiological_testing_done: boolean
+  microbiological_result: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface CleanHoldTimeCreate {
+  equipment_id: number
+  cleaning_completion_time: string
+  next_use_time: string
+  max_validated_cht_hours?: number
+  storage_conditions?: string
+  created_by?: string
+}
+
+export interface CleanHoldTimeUpdate {
+  next_use_time?: string
+  storage_conditions?: string
+  microbiological_testing_done?: boolean
+  microbiological_result?: string
+}
+
+export interface HoldTimeValidation {
+  id: number
+  equipment_id: number
+  equipment_name?: string
+  product_id: number | null
+  product_name?: string
+  hold_type: 'DHT' | 'CHT'
+  validated_hours: number
+  tested_hours: number | null
+  validation_protocol_id: number | null
+  validation_report_id: number | null
+  number_of_successful_runs: number
+  required_runs: number
+  is_validated: boolean
+  validation_date: string | null
+  expiry_date: string | null
+  study_conditions: string | null
+  conclusions: string | null
+  created_at: string
+}
+
+export interface HoldTimeValidationCreate {
+  equipment_id: number
+  product_id?: number
+  hold_type: 'DHT' | 'CHT'
+  validated_hours: number
+  tested_hours?: number
+  study_conditions?: string
+}
+
+// ============================================
+// FORMULATION / DOSAGE FORM TYPES - MISSING (ADDED)
+// ============================================
+
+export interface DosageForm {
+  id: number
+  name: string
+  code: string
+  plant_type: string
+  requires_sterility: boolean
+  requires_endotoxin_testing: boolean
+  requires_microbiological_testing: boolean
+  default_microbial_limit_cfu: number | null
+  default_endotoxin_limit_eu_ml: number | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface ProductDosageForm {
+  id: number
+  product_id: number
+  dosage_form_id: number
+  batch_quantity: number | null
+  batch_unit: string
+  min_daily_dose: number | null
+  max_daily_dose: number | null
+  dose_unit: string
+}
+
+// ============================================
+// CLEANING PROCESS TYPES - MISSING (ADDED)
+// ============================================
+
+export interface CleaningProcess {
+  id: number
+  process_code: string
+  name: string
+  description: string | null
+  cleaning_type: 'manual' | 'automated_cip' | 'automated_cop' | 'semi_automated'
+  is_validated: boolean
+  is_active: boolean
+  sop_reference: string | null
+  min_temperature_c: number | null
+  max_temperature_c: number | null
+  min_flow_rate_lpm: number | null
+  max_flow_rate_lpm: number | null
+  min_pressure_bar: number | null
+  max_pressure_bar: number | null
+  min_duration_min: number | null
+  max_duration_min: number | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface CleaningParameter {
+  id: number
+  process_id: number
+  parameter_name: string
+  parameter_unit: string
+  target_value: number | null
+  min_acceptable: number
+  max_acceptable: number
+  is_critical: boolean
+  measurement_method: string | null
+}
+
+export interface CleaningExecution {
+  id: number
+  process_id: number
+  session_id: number | null
+  execution_date: string
+  executed_by: string
+  actual_temperature_c: number | null
+  actual_flow_rate_lpm: number | null
+  actual_pressure_bar: number | null
+  actual_duration_min: number | null
+  all_parameters_acceptable: boolean
+  deviations: string | null
+}
+
+// ============================================
+// NOTIFICATION / ALERT TYPES - MISSING (ADDED)
+// ============================================
+
+export interface AMVWarning {
+  field: string
+  display_name: string
+  value: any
+  advice: string
+  severity: 'high' | 'medium' | 'low'
+}
+
+// ============================================
+// EXPORT TYPES - MISSING (ADDED)
+// ============================================
+
+export interface ExportOptions {
+  format: 'pdf' | 'excel' | 'json' | 'csv'
+  includeCharts?: boolean
+  includeTables?: boolean
+  includeHeader?: boolean
+  dateRange?: {
+    from: string
+    to: string
+  }
 }

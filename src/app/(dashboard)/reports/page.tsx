@@ -1,3 +1,4 @@
+// src/app/(dashboard)/reports/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -32,10 +33,24 @@ export default function ReportsPage() {
 
   const fetchReports = async () => {
     try {
-      const res = await api.get('/validation/history?status=COMPLETED')
-      setReports(res.data)
+      const res = await api.get('/validation/history')
+      // Handle both array and object responses
+      let sessionsData = res.data
+      if (res.data.sessions) {
+        sessionsData = res.data.sessions
+      }
+      if (res.data.data) {
+        sessionsData = res.data.data
+      }
+      // Ensure it's an array
+      const sessionsArray = Array.isArray(sessionsData) ? sessionsData : []
+      // Filter only COMPLETED sessions for reports
+      const completedSessions = sessionsArray.filter((s: any) => s.status === 'COMPLETED')
+      setReports(completedSessions)
     } catch (error) {
+      console.error('Failed to fetch reports:', error)
       toast.error('Failed to fetch reports')
+      setReports([])
     } finally {
       setLoading(false)
     }
@@ -59,6 +74,14 @@ export default function ReportsPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pharma-600"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -76,57 +99,57 @@ export default function ReportsPage() {
                 <CardTitle>Generated Reports</CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">Loading...</div>
-                ) : reports.length === 0 ? (
+                {reports.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     No reports generated yet. Complete a validation to generate reports.
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Session Code</TableHead>
-                        <TableHead>Previous Product</TableHead>
-                        <TableHead>Next Product</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {reports.map((report) => (
-                        <TableRow key={report.id}>
-                          <TableCell className="font-mono text-sm">{report.session_code}</TableCell>
-                          <TableCell>{report.previous_product_name}</TableCell>
-                          <TableCell>{report.next_product_name}</TableCell>
-                          <TableCell>
-                            <Badge variant="success">Completed</Badge>
-                          </TableCell>
-                          <TableCell className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(report.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Link href={`/reports/${report.id}`}>
-                                <Button variant="ghost" size="sm">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => downloadReport(report.id, report.session_code)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Session Code</TableHead>
+                          <TableHead>Previous Product</TableHead>
+                          <TableHead>Next Product</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {reports.map((report) => (
+                          <TableRow key={report.id}>
+                            <TableCell className="font-mono text-sm">{report.session_code}</TableCell>
+                            <TableCell>{report.previous_product_name}</TableCell>
+                            <TableCell>{report.next_product_name}</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                            </TableCell>
+                            <TableCell className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(report.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Link href={`/reports/${report.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => downloadReport(report.id, report.session_code)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>

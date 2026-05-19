@@ -1,3 +1,4 @@
+// src/components/notifications/validation-alert.tsx
 'use client'
 
 import { AlertCircle, CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
@@ -49,16 +50,16 @@ export function ValidationAlert({ type, title, message, onClose }: ValidationAle
   const Icon = style.icon
 
   return (
-    <div className={'p-4 ' + style.bg + ' border ' + style.border + ' rounded-lg flex items-start gap-3'}>
-      <Icon className={'h-5 w-5 ' + style.iconColor + ' mt-0.5'} />
+    <div className={`p-4 ${style.bg} border ${style.border} rounded-lg flex items-start gap-3`}>
+      <Icon className={`h-5 w-5 ${style.iconColor} mt-0.5`} />
       <div className="flex-1">
-        <p className={'font-medium ' + style.titleColor}>{title}</p>
-        <p className={'text-sm ' + style.messageColor + ' mt-1'}>{message}</p>
+        <p className={`font-medium ${style.titleColor}`}>{title}</p>
+        <p className={`text-sm ${style.messageColor} mt-1`}>{message}</p>
       </div>
       {onClose && (
         <button 
           onClick={onClose} 
-          className={style.iconColor + ' hover:opacity-70'}
+          className={`${style.iconColor} hover:opacity-70`}
           aria-label="Close notification"
           title="Close"
         >

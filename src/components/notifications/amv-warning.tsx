@@ -1,3 +1,4 @@
+// src/components/notifications/amv-warning.tsx
 'use client'
 
 import { AlertTriangle, XCircle, CheckCircle, Info } from 'lucide-react'
@@ -18,7 +19,7 @@ export function AMVWarning({ warnings, onDismiss }: AMVWarningProps) {
     return (
       <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-        <div>
+        <div className="flex-1">
           <p className="font-medium text-green-800">All AMV details are complete</p>
           <p className="text-sm text-green-700">Analytical Method Validation details are properly filled.</p>
         </div>

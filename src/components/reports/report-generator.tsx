@@ -1,3 +1,4 @@
+// src/components/reports/report-generator.tsx
 'use client'
 
 import { useState } from 'react'

@@ -1,3 +1,4 @@
+// src/components/cleaning-process/CleaningProcessForm.tsx
 'use client'
 
 import { useState } from 'react'
@@ -10,25 +11,30 @@ import { Textarea } from '@/components/ui/textarea'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
-export function CleaningProcessForm() {
+interface CleaningProcessFormProps {
+  initialData?: any
+  isEditing?: boolean
+}
+
+export function CleaningProcessForm({ initialData, isEditing }: CleaningProcessFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    process_code: '',
-    name: '',
-    description: '',
-    cleaning_type: 'manual',
-    sop_reference: '',
-    sop_version: '',
-    min_temperature_c: '',
-    max_temperature_c: '',
-    min_flow_rate_lpm: '',
-    max_flow_rate_lpm: '',
-    min_pressure_bar: '',
-    max_pressure_bar: '',
-    min_duration_min: '',
-    max_duration_min: '',
-    training_required: true
+    process_code: initialData?.process_code || '',
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    cleaning_type: initialData?.cleaning_type || 'manual',
+    sop_reference: initialData?.sop_reference || '',
+    sop_version: initialData?.sop_version || '',
+    min_temperature_c: initialData?.min_temperature_c?.toString() || '',
+    max_temperature_c: initialData?.max_temperature_c?.toString() || '',
+    min_flow_rate_lpm: initialData?.min_flow_rate_lpm?.toString() || '',
+    max_flow_rate_lpm: initialData?.max_flow_rate_lpm?.toString() || '',
+    min_pressure_bar: initialData?.min_pressure_bar?.toString() || '',
+    max_pressure_bar: initialData?.max_pressure_bar?.toString() || '',
+    min_duration_min: initialData?.min_duration_min?.toString() || '',
+    max_duration_min: initialData?.max_duration_min?.toString() || '',
+    training_required: initialData?.training_required ?? true,
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,8 +52,8 @@ export function CleaningProcessForm() {
         name: formData.name,
         description: formData.description,
         cleaning_type: formData.cleaning_type,
-        sop_reference: formData.sop_reference,
-        sop_version: formData.sop_version,
+        sop_reference: formData.sop_reference || null,
+        sop_version: formData.sop_version || null,
         min_temperature_c: formData.min_temperature_c ? parseFloat(formData.min_temperature_c) : null,
         max_temperature_c: formData.max_temperature_c ? parseFloat(formData.max_temperature_c) : null,
         min_flow_rate_lpm: formData.min_flow_rate_lpm ? parseFloat(formData.min_flow_rate_lpm) : null,
@@ -56,36 +62,37 @@ export function CleaningProcessForm() {
         max_pressure_bar: formData.max_pressure_bar ? parseFloat(formData.max_pressure_bar) : null,
         min_duration_min: formData.min_duration_min ? parseFloat(formData.min_duration_min) : null,
         max_duration_min: formData.max_duration_min ? parseFloat(formData.max_duration_min) : null,
-        training_required: formData.training_required
+        training_required: formData.training_required,
       }
       
-      await api.post('/cleaning-process/create', data)
-      toast.success('Cleaning process created successfully')
+      if (isEditing && initialData?.id) {
+        await api.put(`/cleaning-process/${initialData.id}`, data)
+        toast.success('Cleaning process updated successfully')
+      } else {
+        await api.post('/cleaning-process/create', data)
+        toast.success('Cleaning process created successfully')
+      }
       router.push('/cleaning-process')
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to create process')
+      toast.error(error.response?.data?.detail || 'Failed to save process')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({ ...formData, cleaning_type: e.target.value })
-  }
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create Cleaning Process</CardTitle>
+        <CardTitle>{isEditing ? 'Edit Cleaning Process' : 'Create Cleaning Process'}</CardTitle>
         <p className="text-sm text-gray-500">Section 6.0 - Control of Cleaning Process</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="form-process-code">Process Code *</Label>
+              <Label htmlFor="process-code">Process Code *</Label>
               <Input
-                id="form-process-code"
+                id="process-code"
                 required
                 placeholder="e.g., CLEAN-API-001"
                 value={formData.process_code}
@@ -93,9 +100,9 @@ export function CleaningProcessForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="form-process-name">Process Name *</Label>
+              <Label htmlFor="process-name">Process Name *</Label>
               <Input
-                id="form-process-name"
+                id="process-name"
                 required
                 placeholder="e.g., API Reactor Cleaning"
                 value={formData.name}
@@ -105,9 +112,9 @@ export function CleaningProcessForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="form-description">Description</Label>
+            <Label htmlFor="process-description">Description</Label>
             <Textarea
-              id="form-description"
+              id="process-description"
               placeholder="Describe the cleaning process..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -117,15 +124,14 @@ export function CleaningProcessForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="form-cleaning-type">Cleaning Type *</Label>
+              <Label htmlFor="cleaning-type">Cleaning Type *</Label>
               <select
-                id="form-cleaning-type"
-                name="cleaning_type"
-                title="Cleaning Type"
-                aria-label="Select Cleaning Type"
-                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                id="cleaning-type"
+                className="w-full p-2 border rounded-md"
                 value={formData.cleaning_type}
-                onChange={handleSelectChange}
+                onChange={(e) => setFormData({ ...formData, cleaning_type: e.target.value })}
+                aria-label="Cleaning Type"
+                title="Cleaning Type"
               >
                 <option value="manual">Manual Cleaning</option>
                 <option value="automated_cip">Automated CIP</option>
@@ -134,9 +140,9 @@ export function CleaningProcessForm() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="form-sop-reference">SOP Reference</Label>
+              <Label htmlFor="sop-reference">SOP Reference</Label>
               <Input
-                id="form-sop-reference"
+                id="sop-reference"
                 placeholder="e.g., SOP-CLEAN-001"
                 value={formData.sop_reference}
                 onChange={(e) => setFormData({ ...formData, sop_reference: e.target.value })}
@@ -148,9 +154,9 @@ export function CleaningProcessForm() {
             <h3 className="font-medium mb-4">Critical Parameter Limits</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="form-temp-min">Temperature Min (°C)</Label>
+                <Label htmlFor="temp-min">Temperature Min (°C)</Label>
                 <Input
-                  id="form-temp-min"
+                  id="temp-min"
                   type="number"
                   step="1"
                   placeholder="e.g., 20"
@@ -159,9 +165,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-temp-max">Temperature Max (°C)</Label>
+                <Label htmlFor="temp-max">Temperature Max (°C)</Label>
                 <Input
-                  id="form-temp-max"
+                  id="temp-max"
                   type="number"
                   step="1"
                   placeholder="e.g., 80"
@@ -170,9 +176,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-flow-min">Flow Rate Min (L/min)</Label>
+                <Label htmlFor="flow-min">Flow Rate Min (L/min)</Label>
                 <Input
-                  id="form-flow-min"
+                  id="flow-min"
                   type="number"
                   step="10"
                   placeholder="e.g., 100"
@@ -181,9 +187,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-flow-max">Flow Rate Max (L/min)</Label>
+                <Label htmlFor="flow-max">Flow Rate Max (L/min)</Label>
                 <Input
-                  id="form-flow-max"
+                  id="flow-max"
                   type="number"
                   step="10"
                   placeholder="e.g., 500"
@@ -192,9 +198,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-pressure-min">Pressure Min (bar)</Label>
+                <Label htmlFor="pressure-min">Pressure Min (bar)</Label>
                 <Input
-                  id="form-pressure-min"
+                  id="pressure-min"
                   type="number"
                   step="0.5"
                   placeholder="e.g., 2"
@@ -203,9 +209,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-pressure-max">Pressure Max (bar)</Label>
+                <Label htmlFor="pressure-max">Pressure Max (bar)</Label>
                 <Input
-                  id="form-pressure-max"
+                  id="pressure-max"
                   type="number"
                   step="0.5"
                   placeholder="e.g., 6"
@@ -214,9 +220,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-duration-min">Duration Min (minutes)</Label>
+                <Label htmlFor="duration-min">Duration Min (minutes)</Label>
                 <Input
-                  id="form-duration-min"
+                  id="duration-min"
                   type="number"
                   step="5"
                   placeholder="e.g., 15"
@@ -225,9 +231,9 @@ export function CleaningProcessForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="form-duration-max">Duration Max (minutes)</Label>
+                <Label htmlFor="duration-max">Duration Max (minutes)</Label>
                 <Input
-                  id="form-duration-max"
+                  id="duration-max"
                   type="number"
                   step="5"
                   placeholder="e.g., 60"
@@ -240,7 +246,7 @@ export function CleaningProcessForm() {
 
           <div className="flex gap-4">
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Process'}
+              {loading ? 'Saving...' : (isEditing ? 'Update Process' : 'Create Process')}
             </Button>
             <Button type="button" variant="outline" onClick={() => router.push('/cleaning-process')}>
               Cancel

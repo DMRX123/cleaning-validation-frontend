@@ -1,4 +1,4 @@
-// src/components/wizard/Step8_RinseResults.tsx - COMPLETE FIXED
+// src/components/wizard/Step8_RinseResults.tsx
 'use client'
 
 import { useState } from 'react'
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
+import { Trash2, Plus, Loader2 } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -37,9 +39,11 @@ export function Step8_RinseResults({ data, onChange }: { data: any; onChange: (d
       })
       
       const newResults = [...results, { 
+        id: res.data.id,
         equipment_name: formData.equipment_name, 
         result_ppm: res.data.result_ppm,
-        reported: res.data.reported
+        reported: res.data.reported,
+        below_loq: res.data.below_loq
       }]
       setResults(newResults)
       onChange({ ...data, rinseResults: newResults })
@@ -52,9 +56,31 @@ export function Step8_RinseResults({ data, onChange }: { data: any; onChange: (d
     }
   }
 
+  const deleteResult = async (id: number) => {
+    try {
+      await api.delete(`/validation/rinse-result/${id}`)
+      const newResults = results.filter(r => r.id !== id)
+      setResults(newResults)
+      onChange({ ...data, rinseResults: newResults })
+      toast.success('Rinse result deleted')
+    } catch (error) {
+      toast.error('Failed to delete')
+    }
+  }
+
+  const getStatusBadge = (result: any) => {
+    if (result.below_loq) return <Badge variant="outline">Below LOQ</Badge>
+    if (data.rinseLimit && result.result_ppm <= data.rinseLimit.limit_ppm) {
+      return <Badge className="bg-green-100 text-green-800">PASS</Badge>
+    }
+    return <Badge className="bg-red-100 text-red-800">FAIL</Badge>
+  }
+
   return (
     <Card>
-      <CardHeader><CardTitle>Step 8: Rinse Results</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Step 8: Rinse Results</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-4 gap-4">
           <div className="space-y-2">
@@ -97,28 +123,37 @@ export function Step8_RinseResults({ data, onChange }: { data: any; onChange: (d
         </div>
         
         <Button onClick={addResult} disabled={loading} className="w-full">
-          {loading ? 'Adding...' : 'Add Rinse Result'}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+          Add Rinse Result
         </Button>
         
         {results.length > 0 && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Equipment</TableHead>
-                <TableHead>Result (ppm)</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {results.map((r, i) => (
-                <TableRow key={i}>
-                  <TableCell>{r.equipment_name}</TableCell>
-                  <TableCell>{r.result_ppm?.toFixed(2) || '-'}</TableCell>
-                  <TableCell>{r.reported || '-'}</TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Equipment</TableHead>
+                  <TableHead>Result (ppm)</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-10">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {results.map((r, i) => (
+                  <TableRow key={r.id || i}>
+                    <TableCell>{r.equipment_name}</TableCell>
+                    <TableCell>{r.result_ppm?.toFixed(2) || (r.below_loq ? '< LOQ' : '-')}</TableCell>
+                    <TableCell>{getStatusBadge(r)}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" onClick={() => deleteResult(r.id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

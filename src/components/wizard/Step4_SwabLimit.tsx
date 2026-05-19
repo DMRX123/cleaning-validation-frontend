@@ -1,15 +1,17 @@
+// src/components/wizard/Step4_SwabLimit.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Loader2, AlertCircle, Ruler, FlaskConical } from 'lucide-react'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
 export function Step4_SwabLimit({ data, onChange }: { data: any; onChange: (data: any) => void }) {
   const [loading, setLoading] = useState(false)
-  const [calculated, setCalculated] = useState(false)
+  const [swabData, setSwabData] = useState<any>(null)
 
   const calculateSwabLimit = async () => {
     if (!data.sessionId) {
@@ -31,11 +33,13 @@ export function Step4_SwabLimit({ data, onChange }: { data: any; onChange: (data
 
       const swabLimit = {
         mg_per_swab: response.data.mg_per_swab,
-        ppm: response.data.ppm
+        ppm: response.data.ppm,
+        formula: response.data.formula,
+        reference: response.data.reference,
       }
 
+      setSwabData(swabLimit)
       onChange({ ...data, swabLimit })
-      setCalculated(true)
       toast.success('Swab limit calculated successfully')
     } catch (error: any) {
       console.error('Swab limit calculation failed:', error)
@@ -45,9 +49,8 @@ export function Step4_SwabLimit({ data, onChange }: { data: any; onChange: (data
     }
   }
 
-  // Auto-calculate when sessionId and totalSurfaceArea are available
   useEffect(() => {
-    if (data.sessionId && data.totalSurfaceArea && data.totalSurfaceArea > 0 && !data.swabLimit && !calculated) {
+    if (data.sessionId && data.totalSurfaceArea && data.totalSurfaceArea > 0 && !data.swabLimit && !loading) {
       calculateSwabLimit()
     }
   }, [data.sessionId, data.totalSurfaceArea])
@@ -55,36 +58,44 @@ export function Step4_SwabLimit({ data, onChange }: { data: any; onChange: (data
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Step 4: Swab Limit Calculation</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Ruler className="h-5 w-5" />
+          Step 4: Swab Limit Calculation (APIC Section 4.2.4)
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {data.swabLimit ? (
+        {swabData ? (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div className="p-6 bg-green-50 rounded-xl text-center border border-green-200">
+                <FlaskConical className="h-8 w-8 text-pharma-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-600 mb-1">Swab Limit (per swab)</p>
-                <p className="text-3xl font-bold text-pharma-700">{data.swabLimit.mg_per_swab?.toFixed(6) || '0'} mg/swab</p>
+                <p className="text-3xl font-bold text-pharma-700">{swabData.mg_per_swab?.toFixed(6)} mg/swab</p>
                 <p className="text-xs text-gray-500 mt-2">(MACO × Swab Area) / (Total Area × Recovery)</p>
               </div>
               <div className="p-6 bg-blue-50 rounded-xl text-center border border-blue-200">
+                <AlertCircle className="h-8 w-8 text-pharma-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-600 mb-1">Swab Limit</p>
-                <p className="text-3xl font-bold text-pharma-700">{data.swabLimit.ppm?.toFixed(2) || '0'} ppm</p>
+                <p className="text-3xl font-bold text-pharma-700">{swabData.ppm?.toFixed(2)} ppm</p>
                 <p className="text-xs text-gray-500 mt-2">(MACO × Swab Area × 1000) / (Total Area × Dilution × Recovery)</p>
               </div>
             </div>
 
-            <div className="p-3 bg-yellow-50 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Acceptance Criteria:</strong> Swab results must be below {data.swabLimit.ppm?.toFixed(2)} ppm
+            <div className="p-4 bg-yellow-50 rounded-lg">
+              <p className="text-sm font-medium text-yellow-800">Acceptance Criteria</p>
+              <p className="text-sm text-yellow-700 mt-1">
+                Swab results must be below <strong>{swabData.ppm?.toFixed(2)} ppm</strong> to be acceptable.
+                Results below LOQ will be reported as "Below LOQ".
               </p>
             </div>
 
-            <Button 
-              onClick={calculateSwabLimit} 
-              disabled={loading} 
-              variant="outline" 
-              className="w-full"
-            >
+            <div className="p-3 bg-gray-50 rounded-lg text-sm">
+              <p className="font-medium">Formula Reference</p>
+              <p className="text-xs text-gray-600 mt-1">{swabData.formula}</p>
+              <p className="text-xs text-gray-500 mt-1">{swabData.reference}</p>
+            </div>
+
+            <Button onClick={calculateSwabLimit} disabled={loading} variant="outline" className="w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Recalculate Swab Limit
             </Button>

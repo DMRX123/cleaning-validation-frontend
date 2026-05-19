@@ -1,10 +1,10 @@
-// Fixed StepIndicator.tsx
+// src/components/wizard/StepIndicator.tsx
 'use client'
 
-import { cn } from '@/lib/utils'
 import { Check, Lock } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-interface Step {
+export interface Step {
   id: number
   name: string
   description: string
@@ -33,47 +33,75 @@ export function StepIndicator({ steps, currentStep, getStepStatus, onStepClick }
     }
   }
 
+  // Helper to get circle classes
+  const getCircleClass = (status: string) => {
+    const baseClass = "w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200 z-10 relative"
+    if (status === 'completed') return `${baseClass} bg-green-600 text-white`
+    if (status === 'current') return `${baseClass} bg-yellow-500 text-white ring-4 ring-yellow-200`
+    if (status === 'locked') return `${baseClass} bg-gray-300 text-gray-500 cursor-not-allowed`
+    return `${baseClass} bg-gray-200 text-gray-500`
+  }
+
+  // Helper to get label classes
+  const getLabelClass = (status: string) => {
+    const baseClass = "text-xs font-medium mt-2 text-center"
+    if (status === 'completed') return `${baseClass} text-green-700`
+    if (status === 'current') return `${baseClass} text-yellow-600`
+    if (status === 'locked') return `${baseClass} text-gray-400`
+    return `${baseClass} text-gray-500`
+  }
+
+  // Helper to get connector class
+  const getConnectorClass = (status: string, isLast: boolean) => {
+    if (isLast) return "hidden"
+    const baseClass = "absolute top-5 left-1/2 right-[-50%] h-0.5 -translate-y-1/2"
+    if (status === 'completed') return `${baseClass} bg-green-600`
+    return `${baseClass} bg-gray-300`
+  }
+
   return (
-    <div className="step-indicator-container">
-      <div className="step-indicator-list">
+    <div className="w-full py-6 px-4">
+      <div className="relative flex items-center justify-between">
         {steps.map((step, index) => {
           const status = statusFn(step.id)
           const isCompleted = status === 'completed'
           const isCurrent = status === 'current'
           const isLocked = status === 'locked'
-          
-          // Determine circle class
-          let circleClass = 'step-indicator-circle'
-          if (isCompleted) circleClass += ' step-indicator-circle-completed'
-          else if (isCurrent) circleClass += ' step-indicator-circle-current'
-          else if (isLocked) circleClass += ' step-indicator-circle-locked'
-          else circleClass += ' step-indicator-circle-pending'
-          
-          // Determine label class
-          let labelClass = 'step-indicator-label'
-          if (isCompleted) labelClass += ' step-indicator-label-completed'
-          else if (isCurrent) labelClass += ' step-indicator-label-current'
-          else if (isLocked) labelClass += ' step-indicator-label-locked'
-          else labelClass += ' step-indicator-label-pending'
+          const isLast = index === steps.length - 1
           
           return (
             <div 
               key={step.id} 
-              className="step-indicator-item"
+              className="flex-1 relative flex flex-col items-center"
               onClick={() => handleStepClick(step.id)}
+              style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
             >
-              <div className={circleClass}>
-                {isCompleted ? <Check className="step-indicator-check-icon" /> : isLocked ? <Lock className="h-4 w-4" /> : step.id}
-              </div>
-              <div className={labelClass}>
-                {step.name}
-              </div>
-              <div className="step-indicator-description">
-                {step.description}
-              </div>
-              {index < steps.length - 1 && (
-                <div className={`step-indicator-connector ${step.id < currentStep ? 'step-indicator-connector-active' : ''}`} />
+              {/* Connector Line - Left side (except first) */}
+              {index > 0 && (
+                <div 
+                  className={cn(
+                    "absolute top-5 left-[-50%] right-[50%] h-0.5 -translate-y-1/2",
+                    steps[index - 1] && statusFn(steps[index - 1].id) === 'completed' ? 'bg-green-600' : 'bg-gray-300'
+                  )}
+                />
               )}
+              
+              {/* Step Circle */}
+              <div className={getCircleClass(status)}>
+                {isCompleted ? (
+                  <Check className="w-5 h-5" />
+                ) : isLocked ? (
+                  <Lock className="w-4 h-4" />
+                ) : (
+                  <span>{step.id}</span>
+                )}
+              </div>
+              
+              {/* Step Label */}
+              <div className={getLabelClass(status)}>
+                <div className="font-medium">{step.name}</div>
+                <div className="text-xs text-gray-400 hidden sm:block">{step.description}</div>
+              </div>
             </div>
           )
         })}

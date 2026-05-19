@@ -1,3 +1,4 @@
+// src/components/ui/tabs.tsx - Add disabled support
 'use client'
 
 import * as React from "react"
@@ -50,9 +51,10 @@ export interface TabsTriggerProps {
   value: string
   children: React.ReactNode
   className?: string
+  disabled?: boolean  // ADD THIS LINE
 }
 
-export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
+export function TabsTrigger({ value, children, className, disabled }: TabsTriggerProps) {
   const context = React.useContext(TabsContext)
   if (!context) throw new Error("TabsTrigger must be used within Tabs")
   
@@ -62,12 +64,14 @@ export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
     <button
       className={cn(
         "px-4 py-2 text-sm font-medium transition-colors",
-        isActive
+        isActive && !disabled
           ? "border-b-2 border-pharma-600 text-pharma-600"
           : "text-gray-500 hover:text-gray-700",
+        disabled && "opacity-50 cursor-not-allowed",
         className
       )}
-      onClick={() => context.onValueChange(value)}
+      onClick={() => !disabled && context.onValueChange(value)}
+      disabled={disabled}
     >
       {children}
     </button>

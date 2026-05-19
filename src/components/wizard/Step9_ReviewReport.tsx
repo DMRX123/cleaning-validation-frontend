@@ -1,3 +1,4 @@
+// src/components/wizard/Step9_ReviewReport.tsx
 'use client'
 
 import { useState } from 'react'
@@ -5,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, AlertCircle, Eye, Download, FileText } from 'lucide-react'
+import { CheckCircle, AlertCircle, Eye, Download, FileText, Edit } from 'lucide-react'
+import { DynamicProtocolReport } from '@/components/dynamic-pdf/DynamicProtocolReport'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -13,7 +15,6 @@ export function Step9_ReviewReport({ data, onChange }: { data: any; onChange: (d
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  // Check if all required data is present
   const hasMaco = data.maco && data.maco.lowest_maco > 0
   const hasSwabLimit = data.swabLimit && data.swabLimit.ppm > 0
   const hasRinseLimit = data.rinseLimit && data.rinseLimit.limit_ppm > 0
@@ -36,7 +37,14 @@ export function Step9_ReviewReport({ data, onChange }: { data: any; onChange: (d
 
     setLoading(true)
     try {
-      const response = await api.get(`/reports/${data.sessionId}/pdf`, {
+      const response = await api.post(`/report/generate/${data.sessionId}`, {
+        sections: {
+          introduction: data.custom_introduction || '',
+          objective: data.custom_objective || '',
+          scope: data.custom_scope || '',
+          conclusion: data.custom_conclusion || '',
+        }
+      }, {
         responseType: 'blob',
       })
       
@@ -89,30 +97,30 @@ export function Step9_ReviewReport({ data, onChange }: { data: any; onChange: (d
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className={`p-3 rounded-lg flex items-center gap-2 ${hasMaco ? 'bg-green-50' : 'bg-gray-50'}`}>
             {hasMaco ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-gray-400" />}
-            <span className="text-sm">Step 3: MACO Calculated</span>
+            <span className="text-sm">MACO Calculated</span>
             {hasMaco && <span className="text-xs text-green-600 ml-auto">{data.maco?.lowest_maco?.toFixed(2)} mg</span>}
           </div>
           <div className={`p-3 rounded-lg flex items-center gap-2 ${hasSwabLimit ? 'bg-green-50' : 'bg-gray-50'}`}>
             {hasSwabLimit ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-gray-400" />}
-            <span className="text-sm">Step 4: Swab Limit Calculated</span>
+            <span className="text-sm">Swab Limit Calculated</span>
             {hasSwabLimit && <span className="text-xs text-green-600 ml-auto">{data.swabLimit?.ppm?.toFixed(2)} ppm</span>}
           </div>
           <div className={`p-3 rounded-lg flex items-center gap-2 ${hasRinseLimit ? 'bg-green-50' : 'bg-gray-50'}`}>
             {hasRinseLimit ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-gray-400" />}
-            <span className="text-sm">Step 5: Rinse Limit Calculated</span>
+            <span className="text-sm">Rinse Limit Calculated</span>
             {hasRinseLimit && <span className="text-xs text-green-600 ml-auto">{data.rinseLimit?.limit_ppm?.toFixed(2)} ppm</span>}
           </div>
           <div className={`p-3 rounded-lg flex items-center gap-2 ${hasStandardPrep ? 'bg-green-50' : 'bg-gray-50'}`}>
             {hasStandardPrep ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-gray-400" />}
-            <span className="text-sm">Step 6: Standard Prep Saved</span>
+            <span className="text-sm">Standard Prep Saved</span>
           </div>
           <div className={`p-3 rounded-lg flex items-center gap-2 ${hasSwabResults ? 'bg-green-50' : 'bg-gray-50'}`}>
             {hasSwabResults ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-gray-400" />}
-            <span className="text-sm">Step 7: Swab Results ({hasSwabResults ? data.swabResults.length : 0})</span>
+            <span className="text-sm">Swab Results ({hasSwabResults ? data.swabResults.length : 0})</span>
           </div>
           <div className={`p-3 rounded-lg flex items-center gap-2 ${hasRinseResults ? 'bg-green-50' : 'bg-gray-50'}`}>
             {hasRinseResults ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-gray-400" />}
-            <span className="text-sm">Step 8: Rinse Results ({hasRinseResults ? data.rinseResults.length : 0})</span>
+            <span className="text-sm">Rinse Results ({hasRinseResults ? data.rinseResults.length : 0})</span>
           </div>
         </div>
 
@@ -138,57 +146,14 @@ export function Step9_ReviewReport({ data, onChange }: { data: any; onChange: (d
           </div>
         </div>
 
-        {/* Swab Results Preview */}
-        {data.swabResults && data.swabResults.length > 0 && (
-          <div>
-            <h4 className="font-medium text-sm mb-2">Swab Results Summary</h4>
-            <div className="max-h-32 overflow-auto border rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="p-2 text-left">Location</th>
-                    <th className="p-2 text-left">Result (ppm)</th>
-                    <th className="p-2 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.swabResults.slice(0, 5).map((result: any, idx: number) => (
-                    <tr key={idx} className="border-t">
-                      <td className="p-2">{result.location_name}</td>
-                      <td className="p-2">{result.result_ppm?.toFixed(2) || '—'}</td>
-                      <td className="p-2">
-                        <Badge variant={result.result_ppm < (data.swabLimit?.ppm || 50) ? 'success' : 'destructive'} className="text-xs">
-                          {result.result_ppm < (data.swabLimit?.ppm || 50) ? 'PASS' : 'FAIL'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {data.swabResults.length > 5 && (
-                <p className="text-xs text-gray-400 text-center p-1">+{data.swabResults.length - 5} more results</p>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
-          <Button 
-            onClick={handleViewReport}
-            variant="outline"
-            className="flex-1"
-            disabled={!data.sessionId}
-          >
+          <Button onClick={handleViewReport} variant="outline" className="flex-1" disabled={!data.sessionId}>
             <Eye className="h-4 w-4 mr-2" />
             Preview Report
           </Button>
           
-          <Button 
-            onClick={handleGenerateReport}
-            disabled={loading || !isComplete || !data.sessionId}
-            className="flex-1 bg-pharma-600 hover:bg-pharma-700"
-          >
+          <Button onClick={handleGenerateReport} disabled={loading || !isComplete || !data.sessionId} className="flex-1 bg-pharma-600 hover:bg-pharma-700">
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -211,9 +176,6 @@ export function Step9_ReviewReport({ data, onChange }: { data: any; onChange: (d
               <p className="font-medium">Validation Incomplete</p>
               <p className="text-xs mt-1">
                 Please complete all previous steps before generating the final report.
-                Missing: {!hasMaco && "MACO, "} {!hasSwabLimit && "Swab Limit, "} 
-                {!hasRinseLimit && "Rinse Limit, "} {!hasStandardPrep && "Standard Prep, "}
-                {!hasSwabResults && "Swab Results, "} {!hasRinseResults && "Rinse Results"}
               </p>
             </div>
           </div>

@@ -1,15 +1,75 @@
+// src/components/cleaning-levels/CleaningLevelSelector.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Info, Loader2 } from 'lucide-react'
-import api from '@/lib/api'
 
 interface CleaningLevelSelectorProps {
   previousProductId: number
   nextProductId: number 
   onLevelDetermined: (level: string, requirements: any) => void
+}
+
+// Client-side cleaning level determination based on APIC Section 5.0
+const determineCleaningLevel = (
+  previousProduct: any, 
+  nextProduct: any, 
+  sameSyntheticChain: boolean
+): { level: string; requirements: any; justification: string } => {
+  // Level 0: Same synthetic chain, immediate next step
+  if (sameSyntheticChain) {
+    return {
+      level: 'LEVEL_0',
+      requirements: {
+        visual_inspection: true,
+        analytical_testing: false,
+        microbiological_testing: false,
+        validation_required: false,
+        verification_frequency: null,
+        max_residue_ppm: null,
+        description: 'Visual inspection only - low risk. Same synthetic chain, carryover covered by impurity profile.'
+      },
+      justification: `Same synthetic chain selected. Carryover of ${previousProduct?.name} is covered by the impurity profile of ${nextProduct?.name}.`
+    }
+  }
+  
+  // Check toxicity - high toxicity requires Level 2
+  const isHighToxicity = previousProduct?.ade_pde < 10
+  const isDifferentPlant = previousProduct?.plant !== nextProduct?.plant
+  
+  // Level 2: High risk scenarios
+  if (isHighToxicity || isDifferentPlant) {
+    return {
+      level: 'LEVEL_2',
+      requirements: {
+        visual_inspection: true,
+        analytical_testing: true,
+        microbiological_testing: true,
+        validation_required: true,
+        verification_frequency: 'Every batch',
+        max_residue_ppm: 10,
+        description: 'Full validation with analytical and microbiological testing - high risk.'
+      },
+      justification: `High risk: ${isHighToxicity ? `ADE/PDE (${previousProduct?.ade_pde} µg/day) is below threshold` : ''}${isHighToxicity && isDifferentPlant ? ' and ' : ''}${isDifferentPlant ? `different plant (${previousProduct?.plant} → ${nextProduct?.plant})` : ''}. Full validation required.`
+    }
+  }
+  
+  // Default Level 1
+  return {
+    level: 'LEVEL_1',
+    requirements: {
+      visual_inspection: true,
+      analytical_testing: true,
+      microbiological_testing: false,
+      validation_required: true,
+      verification_frequency: 'Periodic (quarterly)',
+      max_residue_ppm: 100,
+      description: 'Visual + analytical testing - medium risk.'
+    },
+    justification: `Medium risk: Different product lines but moderate toxicity (ADE/PDE: ${previousProduct?.ade_pde} µg/day). Level 1 validation required.`
+  }
 }
 
 export function CleaningLevelSelector({ 
@@ -20,27 +80,46 @@ export function CleaningLevelSelector({
   const [loading, setLoading] = useState(false)
   const [level, setLevel] = useState<string | null>(null)
   const [requirements, setRequirements] = useState<any>(null)
+  const [justification, setJustification] = useState<string>('')
   const [sameChain, setSameChain] = useState(false)
+  const [products, setProducts] = useState<any[]>([])
+
+  // Fetch products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products')
+        const data = await res.json()
+        setProducts(data)
+      } catch (error) {
+        console.error('Failed to fetch products:', error)
+      }
+    }
+    fetchProducts()
+  }, [])
 
   useEffect(() => {
-    if (previousProductId && nextProductId) {
+    if (previousProductId && nextProductId && products.length > 0) {
       determineLevel()
     }
-  }, [previousProductId, nextProductId, sameChain])
+  }, [previousProductId, nextProductId, sameChain, products])
 
   const determineLevel = async () => {
     setLoading(true)
     try {
-      const res = await api.post('/cleaning-validation/determine-cleaning-level', {
-        previous_product_id: previousProductId,
-        next_product_id: nextProductId,
-        same_synthetic_chain: sameChain
-      })
+      const previousProduct = products.find(p => p.id === previousProductId)
+      const nextProduct = products.find(p => p.id === nextProductId)
       
-      const responseData = res.data.data || res.data
-      setLevel(responseData.cleaning_level)
-      setRequirements(responseData.requirements)
-      onLevelDetermined(responseData.cleaning_level, responseData.requirements)
+      if (!previousProduct || !nextProduct) {
+        throw new Error('Products not found')
+      }
+      
+      const result = determineCleaningLevel(previousProduct, nextProduct, sameChain)
+      
+      setLevel(result.level)
+      setRequirements(result.requirements)
+      setJustification(result.justification)
+      onLevelDetermined(result.level, result.requirements)
     } catch (error) {
       console.error('Failed to determine cleaning level:', error)
     } finally {
@@ -77,6 +156,8 @@ export function CleaningLevelSelector({
               checked={sameChain}
               onChange={(e) => setSameChain(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300 text-pharma-600 focus:ring-pharma-500"
+              aria-label="Same synthetic chain"
+              title="Same synthetic chain"
             />
             <span className="text-sm font-medium text-gray-700">Same synthetic chain</span>
           </label>
@@ -132,6 +213,10 @@ export function CleaningLevelSelector({
 
             <div className="p-3 bg-green-50 rounded-lg">
               <p className="text-sm text-green-800">{requirements.description}</p>
+            </div>
+            
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-700"><strong>Justification:</strong> {justification}</p>
             </div>
 
             <div className="p-2 bg-gray-100 rounded text-xs text-gray-500 text-center">
