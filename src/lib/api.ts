@@ -1,11 +1,11 @@
 // frontend/src/lib/api.ts
 import axios from 'axios'
 
-// ✅ CHANGE THIS URL to your Render backend URL
+// ✅ REMOVE '/api' from baseURL - it's already in the backend route
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cleaning-validation-backend.onrender.com'
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: `${API_BASE_URL}`,  // ← REMOVE '/api' from here
   headers: {
     'Content-Type': 'application/json',
   },

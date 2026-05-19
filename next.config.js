@@ -8,6 +8,7 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
+                // ✅ Remove /api from destination as well
                 destination: process.env.NEXT_PUBLIC_API_URL
                     ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
                     : 'https://cleaning-validation-backend.onrender.com/api/:path*',
