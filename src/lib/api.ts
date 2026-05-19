@@ -1,7 +1,8 @@
-// src/lib/api.ts
+// frontend/src/lib/api.ts
 import axios from 'axios'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+// ✅ CHANGE THIS URL to your Render backend URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://cleaning-validation-backend.onrender.com'
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -14,8 +15,7 @@ const api = axios.create({
 // Request interceptor - Add auth token
 api.interceptors.request.use(
   (config) => {
-    // For demo, use dummy admin token since backend has no auth
-    const token = localStorage.getItem('token') || 'dummy_admin_token_for_development'
+    const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }

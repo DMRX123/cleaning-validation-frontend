@@ -1,4 +1,4 @@
-// next.config.js
+// frontend/next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
@@ -10,7 +10,7 @@ const nextConfig = {
                 source: '/api/:path*',
                 destination: process.env.NEXT_PUBLIC_API_URL
                     ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
-                    : 'http://localhost:8000/api/:path*',
+                    : 'https://cleaning-validation-backend.onrender.com/api/:path*',
             },
         ]
     },
@@ -36,11 +36,6 @@ const nextConfig = {
     },
 
     output: 'standalone',
-
-    // REMOVE this line - serverActions is now default
-    // experimental: {
-    //   serverActions: true,
-    // },
 }
 
 module.exports = nextConfig
